@@ -5,8 +5,8 @@ import { api } from "~/utils/api";
 import { Chat, ChatRole } from "@prisma/client";
 import { useChat } from "ai/react"
 import { Input } from "./ui/input";
-// import { Label } from "./ui/label";
-// import { Loader2 } from "lucide-react";
+import { Label } from "./ui/label";
+import { Loader2 } from "lucide-react";
 
 type ChatComponentProps = {
   children?: ReactNode;
@@ -21,7 +21,7 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
     useChat({
       api: `/api/openai`,
       body: {
-        chatId: chatId as string,
+        // chatId: chatId as string,
       },
       onFinish(message) {
         saveChatMessage(
@@ -32,9 +32,6 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
           },
           {
             onError(error) {
-              console.log("error!");
-              console.log("error!");
-              console.log("error!");
               console.log(error);
             },
           }
@@ -44,42 +41,19 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
 
   const { data: chatsData } = api.chat.getChats.useQuery();
 
-  const { data: messagesData, isFetching: isMessageLoading, refetch: refetchMessages } =
-    api.chat.getMessages.useQuery(
-      { chatId: chatId + "" },
-      { enabled: !!chatId }
-    );
+  const { data: messagesData, isFetching: isMessagesLoading } =
+  api.chat.getMessages.useQuery(
+    {
+      chatId: chatId as string,
+    },
+    {
+      enabled: !!chatId,
+    }
+  );
 
   
   const selectedChat = chatsData?.find((chat) => chat.id === chatId) as Chat;
 
-
-  useEffect(() => {
-    if (!messagesData) return;
-    // take the presaved messages and add them to messages;
-    setMessages(
-      messagesData.map((message) => ({
-        content: message.text,
-        id: message.id,
-        role: message.role,
-        createdAt: message.createdAt,
-      }))
-    );
-  }, [messagesData]);
-
-  const [usrMessage, setUsrMessage] = useState("");
-
-  const maxTextareaHeight = 200; // Maximum height before scrolling is enabled
-
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  // const { mutate: saveChatMessage } = api.chat.saveChatMessage.useMutation({
-  //   onSuccess: () => {
-  //     setUsrMessage(""); // Clear the input field
-  //     // Refetch messages after saving a new message
-  //     refetchMessages();
-  //   },
-  // });
 
   const handleSubmitInFunction = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -101,18 +75,22 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
   };
 
   useEffect(() => {
-    if (!messagesData) return;
-    // take the presaved messages and add them to messages;
+    if (!messagesData) return
+
+    console.log()
+    console.log("chatId")
+    console.log(chatId)
+
     setMessages(
       messagesData.map((message) => ({
         content: message.text,
         id: message.id,
         role: message.role,
-        createdAt: message.createdAt,
+        createdAt: message.createdAt
       }))
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messagesData]);
+    }, [messagesData]);
+  
 
   // const handleKeyPress = (e: React.KeyboardEvent) => {
   //   if (e.key === "Enter" && !e.shiftKey) {
@@ -122,50 +100,56 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
   // };
 
   return (
-    <div className="flex h-screen max-h-screen w-full flex-col justify-between">
-      {/* the chat component label */}
-      <div className="flex flex-row border-b p-4">
-        Selected chat:
-        {/* <Label className="ml-2 font-bold">
-          {selectedChat && selectedChat.name}
-        </Label> */}
-      </div>
-      {/* the container that has all the messages */}
-      <AutoScrollContainer>
-        {messages.map((message) => {
-          const { content, id, role } = message;
-          return (
-            <div
-              key={id}
-              className={`${
-                role !== ChatRole.assistant && "bg-accent"
-              } my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2`}
+    <div className="flex h-screen max-h-screen w-full flex-col justify-between bg-gray-100">
+  {/* Chat component label */}
+  <div className="flex flex-row border-b p-4 bg-white">
+    <span className="font-semibold text-gray-800">Selected chat:</span>
+    <Label className="ml-2 font-bold text-blue-600">
+      {selectedChat && selectedChat.name}
+    </Label>
+  </div>
+  {/* Container for messages */}
+  <AutoScrollContainer>
+    {messages.map((message) => {
+      const { content, id, role } = message;
+      const messageClassName = role !== ChatRole.assistant ? "bg-accent" : "bg-white";
+
+      return (
+        <div
+          key={id}
+          className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
+        >
+          <div className="flex flex-col">
+            <h1
+              className={`font-semibold ${
+                role === ChatRole.assistant ? "text-blue-600" : "text-green-600"
+              }`}
             >
-              <div className="flex flex-col justify-center gap-3">
-                <h1>{role === ChatRole.assistant ? "Assistant" : "You"}</h1>
-                <p className="text-sm">{content}</p>
-              </div>
-            </div>
-          );
-        })}
-        {/* {isMessageLoading && (
-          <div className="flex h-full items-center justify-center">
-            <Loader2 className="animate-spin" size={64} />
+              {role === ChatRole.assistant ? "Assistant" : "You"}
+            </h1>
+            <p className="text-sm text-gray-700">{content}</p>
           </div>
-        )} */}
-      </AutoScrollContainer>
-      {/* the main input into the chat */}
-      <div className="h-[55px] w-full bg-accent px-2">
-        <form className="w-full" onSubmit={handleSubmitInFunction}>
-          <Input
-            className="h-[55px] w-full"
-            placeholder="Say something..."
-            value={input}
-            onChange={handleInputChange}
-          />
-        </form>
+        </div>
+      );
+    })}
+    {isMessagesLoading && (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="animate-spin text-blue-500" size={64} />
       </div>
-    </div>
+    )}
+  </AutoScrollContainer>
+  {/* Input box */}
+  <div className="h-[55px] bg-accent px-2">
+    <form className="w-full" onSubmit={handleSubmitInFunction}>
+      <Input
+        className="h-[55px] w-full bg-white border rounded-md p-2"
+        placeholder="Say something..."
+        value={input}
+        onChange={handleInputChange}
+      />
+    </form>
+  </div>
+</div>
   );
 };
 

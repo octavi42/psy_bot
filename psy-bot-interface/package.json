@@ -22,6 +22,7 @@
     "@trpc/server": "^10.26.0",
     "@types/bcrypt": "^5.0.0",
     "ai": "^2.1.34",
+    "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",

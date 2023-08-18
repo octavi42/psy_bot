@@ -32,14 +32,18 @@ export async function POST(req: Request) {
 
   const context = await fetcher<{
     data: {
-      text: string;
+      data: string;
     }[];
   }>("search", HTTPMethod.POST, false, {
     search_query: userPrompt,
     chat_id: chatId,
   });
 
-  const contextText = context.data.map((item) => item.text).join(" ");
+  console.log("context.data");
+  console.log( context.data );
+  
+  const contextText = context.data.map((item) => item.data).join(" ");
+  
 
   const promptWithContext = getPromptWithContext(userPrompt, contextText);
 

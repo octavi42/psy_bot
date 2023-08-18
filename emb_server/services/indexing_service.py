@@ -3,20 +3,30 @@ from services import openai_service, youtube_service, file_service, weaviateServ
 from weaviate import Client
 
 
-def indexing_save(result, chat_id, client):
+def indexing_save(client, saveClass, data, match, sender, category, type):
+    # Assuming data is a list of values
+    print("result:")
+    print(data)
 
-    weaviateService.getOrCreateClass(client, chat_id)
+    df = pd.DataFrame(data, columns=["chunk"])
 
-    # put the result into a pandas dataframe
-    df = pd.DataFrame(result, columns=["chunk"])
+    print("df:")
+    print(df)
 
-    # now apply the embedding function to the dataframe
+    # Now apply the embedding function to the dataframe
     df["embedding"] = df["chunk"].apply(openai_service.get_embedding)
 
-    # iterate the dataframe and add every row to the weaviate class
+    # Iterate the dataframe and add every row to the weaviate class
     for index, row in df.iterrows():
         data_object = {
-            "text": row["chunk"],
+            "match": match,
+            "sender": sender,
+            "category": category,
+            "data": row["chunk"],
+            "type": type
         }
-        client.data_object.create(data_object=data_object, class_name=chat_id,
-                                  vector=row["embedding"])
+        client.data_object.create(
+            data_object=data_object,
+            class_name=saveClass,
+            vector=row["embedding"]
+        )

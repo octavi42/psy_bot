@@ -71,8 +71,12 @@ def index_file():
 @app.route("/index-url", methods=["POST"])
 def index_url():
 
-    chat_id = request.get_json()["chat_id"]
     url = request.get_json()["url"]
+    match = request.get_json()["match"]
+    sender = request.get_json()["sender"]
+    category = "Data"
+
+
     is_youtube_url = utils.is_youtube_video(url)
 
     if is_youtube_url:
@@ -88,7 +92,9 @@ def index_url():
     print("done transcribing")
 
 
-    indexing_service.indexing_save(result.text, chat_id, client)
+    indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
+    
+    # indexing_save(client, saveClass, match, sender, category, data, type):
 
     # embed every text and add it to the weaviate class.
 
@@ -102,25 +108,30 @@ def search():
     print("got in request")
     # we get a search query from the request
     search_query = request.get_json()["search_query"]
-    chat_id: str = request.get_json()["chat_id"]
-
+    # chat_id: str = request.get_json()["chat_id"]
+    # search_class = request.get_json()["search_class"]\
+    
     # embed the search query
     search_query_embedding = openai_service.get_embedding(search_query)
 
     response = (
         client.query
-        .get(chat_id, ["text"])
+        .get("Data", ["data"])
         .with_near_vector({
-            "vector": search_query_embedding, })
+            "vector": search_query_embedding,
+        })
         .with_limit(5)
         .with_additional(["distance"])
         .do()
     )
-    capitalized_chat_id = chat_id.capitalize()
-    data = response["data"]["Get"][f"{capitalized_chat_id}"]
+
+    # capitalized_chat_id = chat_id.capitalize()
+    data = response["data"]["Get"]["Data"]
 
     # filter the data in terms of accuracy
     filtered_data = utils.filter_result(data, 0.25)
+
+    print(filtered_data)
 
     return jsonify({
         "data": filtered_data
@@ -146,6 +157,36 @@ def check_schema():
         "schema": schema
     })
 
+
+
+@app.route("/command", methods=["GET"])
+def command():
+    if client.schema.exists("Cll3vq1g6000d0tw7p7l4vdsg"):
+        print("need to delete the classes")
+        response = "classes deleted"
+        client.schema.delete_class("Cll3vq1g6000d0tw7p7l4vdsg")
+    else:
+        print("no classes found")
+        response = "classes not deleted"
+    
+    return jsonify({
+        "response": response
+    })
+
+@app.route("/create-schema", methods=["GET"])
+def create_schema():
+    schema = weaviateService.createSchema(client)
+    return jsonify({
+        "schema": schema
+    })
+
+
+@app.route("/delete-schema", methods=["GET"])
+def delete_schema():
+    schema = weaviateService.deleteSchema(client)
+    return jsonify({
+        "schema": schema
+    })
 
 def test_youtube_transcirbe():
     url = "https://www.youtube.com/watch?v=5ftHdsmf2C0&ab_channel=CreatedTech"

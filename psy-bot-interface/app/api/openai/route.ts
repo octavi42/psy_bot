@@ -25,6 +25,16 @@ export async function POST(req: Request) {
     chatId: string;
   };
 
+  // console.log();
+  // console.log("body II");
+  // console.log(req.json());
+   
+  // console.log();
+  // console.log("messages: ",messages);
+  // console.log("chatid:", chatId);
+  
+  
+
   // get the query param to have the chatId
 
   const latestUserMessage = messages[messages.length - 1] as Message;

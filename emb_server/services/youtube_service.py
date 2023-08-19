@@ -141,11 +141,12 @@ def transcribe_youtube(url, path):
     print("fail 2")
 
     class AudioInfo:
-        def __init__(self, id, mime_type, size, text=None):
+        def __init__(self, id, mime_type, size, text=None, full_text=None):
             self.id = id
             self.mime_type = mime_type
             self.size = size
             self.text = text
+            self.full_text = full_text
 
     audio = AudioInfo(video_id, mime_type, size)
 
@@ -162,6 +163,7 @@ def transcribe_youtube(url, path):
             print("done")
 
             audio.text = chunk_split(transcription["text"], 512)
+            audio.full_text = transcription["text"]
 
             print("printing audio object")
             print(audio.text)

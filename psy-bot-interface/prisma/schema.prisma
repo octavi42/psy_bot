@@ -95,7 +95,7 @@ model Objects {
     createdByUserId String
     title           String
     description     String?
-    transcription   String?
+    transcription   String? @db.Text
     type            String
     
     createdByUser   User       @relation(fields: [createdByUserId], references: [id])

@@ -1,22 +1,37 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import axios from "axios";
 import AdminLayout from "~/components/admin/AdminLayout";
+import cuid from "cuid";
+import { useSession } from "next-auth/react";
+import { api } from "~/utils/api";
 
 type UploadedData = {
-    id: number;
-    title: string;
-    description: string;
-    imageUrl: string;
-    user: string;
-    userId: string;
+  url: string;
+  id: number;
+  title: string;
+  description: string;
+  userId: string;
+  match: string;
 };
+
+type DummyUploadeData = {
+  id: number,
+  title: string,
+  description: string,
+  imageUrl: string,
+  user: string,
+  userId: string
+}
 
 const AdminDatabase: React.FC = () => {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [uploadedData, setUploadedData] = useState<UploadedData[]>([]);
+  const [uploadedData, setUploadedData] = useState<DummyUploadeData[]>([]);
+
+  const { data: sessionData } = useSession();
+  const { mutate: saveObject } = api.object.createChatObject.useMutation();
 
   const handleYoutubeUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setYoutubeUrl(event.target.value);
@@ -30,6 +45,9 @@ const AdminDatabase: React.FC = () => {
     }
   };
 
+  const { data: objectData, isFetching: isObjectsLoading } =
+    api.object.getAll.useQuery();
+
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
   };
@@ -39,45 +57,55 @@ const AdminDatabase: React.FC = () => {
   };
 
   const handleUpload = async () => {
+    const match = cuid();
+    const sender = sessionData?.user.id as string;
+
     try {
-      const formData = new FormData();
-      formData.append("youtubeUrl", youtubeUrl);
-      if (file) {
-        formData.append("file", file);
-      }
-      formData.append("title", title);
-      formData.append("description", description);
-
+  
       // Replace with your API endpoint
-      const response = await axios.post("/api/upload", formData);
+      // const response = await axios.post(`/api/embed`, formData);
 
+      axios({
+          method: "post",
+          url: "/api/embed",
+          data: {
+              url: youtubeUrl as string,
+              match: cuid() as string,
+              sender: sessionData?.user.id as string,
+          },
+          headers: { "Content-Type": "application/json" }, // Change to "application/json"
+      })
+      .then(function (response) {
+        saveObject(
+          {
+            id: match,
+            title: title,
+            description: description,
+            transcription: response.data,
+            fileType: "youtube_video",
+          },
+          {
+            onError(error) {
+              console.log(error);
+            },
+          }
+        );
+      })
+      .catch(function (response) {
+          console.error(response);
+      });
+  
       // Handle success or show a message to the user
-      console.log("Upload successful:", response.data);
-
-      // Add uploaded data to the list
-    //   setUploadedData([
-    //     ...uploadedData,
-    //     {
-    //       id: uploadedData.length + 1,
-    //       title,
-    //       description,
-    //       imageUrl: "https://dummyimage.com/150x150/ccc/000",
-
-    //     },
-    //   ]);
-      
-      // Clear input fields
-      setYoutubeUrl("");
-      setFile(null);
-      setTitle("");
-      setDescription("");
+      // console.log("Upload successful:", response.data);
+  
     } catch (error) {
       // Handle error or show an error message to the user
       console.error("Upload failed:", error);
     }
   };
+  
 
-  const dummyUploadedData: UploadedData[] = [
+  const dummyUploadedData: DummyUploadeData[] = [
     {
       id: 1,
       title: "Sample Title 1",
@@ -150,19 +178,9 @@ const AdminDatabase: React.FC = () => {
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Uploaded Data</h2>
           <ul className="space-y-4">
-            {uploadedData.map((data) => (
+            {objectData?.map((data) => (
               <li key={data.id} className="bg-gray-100 p-4 rounded-lg flex space-x-4 items-center">
-                <img src={data.imageUrl} alt={data.title} className="w-16 h-16 rounded-lg" />
-                <div>
-                  <h3 className="text-lg font-semibold">{data.title}</h3>
-                  <p className="text-gray-600">{data.description}</p>
-                </div>
-              </li>
-            ))}
-            {/* Display dummy data */}
-            {dummyUploadedData.map((data) => (
-              <li key={data.id} className="bg-gray-100 p-4 rounded-lg flex space-x-4 items-center">
-                <img src={data.imageUrl} alt={data.title} className="w-16 h-16 rounded-lg" />
+                {/* <img src={data.imageUrl} alt={data.title} className="w-16 h-16 rounded-lg" /> */}
                 <div>
                   <h3 className="text-lg font-semibold">{data.title}</h3>
                   <p className="text-gray-600">{data.description}</p>
@@ -172,6 +190,8 @@ const AdminDatabase: React.FC = () => {
           </ul>
         </div>
       </div>
+
+      
     </AdminLayout>
   );
 };

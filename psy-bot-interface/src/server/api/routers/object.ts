@@ -10,6 +10,7 @@ export const objectsRouter = createTRPCRouter({
   createChatObject: protectedProcedure
     .input(
       z.object({
+        id: z.string(),
         title: z.string(),
         description: z.string(),
         transcription: z.string(),
@@ -17,10 +18,12 @@ export const objectsRouter = createTRPCRouter({
       })
     )
     .mutation(({ ctx, input }) => {
-      const { title, description, transcription, fileType } = input;
+      const { id, title, description, transcription, fileType } = input;
 
       return ctx.prisma.objects.create({
         data: {
+            id: id,
+            createdByUserId: ctx.session.user.id,
             title: title,
             description: description,
             transcription: transcription,

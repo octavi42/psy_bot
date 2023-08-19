@@ -92,14 +92,14 @@ def index_url():
     print("done transcribing")
 
 
-    indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
+    # indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
     
     # indexing_save(client, saveClass, match, sender, category, data, type):
 
     # embed every text and add it to the weaviate class.
 
     return jsonify({
-        "data": result.text
+        "data": result.full_text
     })
 
 
@@ -187,6 +187,23 @@ def delete_schema():
     return jsonify({
         "schema": schema
     })
+
+
+@app.route("/delete-object", methods=["POST"])
+def delete_object():
+    id = request.get_json()["id"]
+    result = client.batch.delete_objects(
+        class_name='YourClassName',
+        where={
+            'path': ['match'],
+            'operator': 'Equal',
+            'valueString': id
+        }
+    )
+    return jsonify({
+        "result": result
+    })
+
 
 def test_youtube_transcirbe():
     url = "https://www.youtube.com/watch?v=5ftHdsmf2C0&ab_channel=CreatedTech"

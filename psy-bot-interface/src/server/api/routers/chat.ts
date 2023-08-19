@@ -17,9 +17,7 @@ export const chatRouter = createTRPCRouter({
 
     getAll: protectedProcedure.query(({ ctx }) => {
         return ctx.prisma.chat.findMany({
-            where: {
-                createdByUserId: ctx.session?.user.id,
-            }
+            
         });
     }),
 

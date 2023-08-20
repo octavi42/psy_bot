@@ -76,6 +76,9 @@ def index_url():
     sender = request.get_json()["sender"]
     category = "Data"
 
+    print()
+    print("match that I got in the server:")
+    print(match)
 
     is_youtube_url = utils.is_youtube_video(url)
 
@@ -92,7 +95,7 @@ def index_url():
     print("done transcribing")
 
 
-    # indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
+    indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
     
     # indexing_save(client, saveClass, match, sender, category, data, type):
 
@@ -126,12 +129,15 @@ def search():
     )
 
     # capitalized_chat_id = chat_id.capitalize()
+    
+    print(response)
+
+
     data = response["data"]["Get"]["Data"]
 
     # filter the data in terms of accuracy
     filtered_data = utils.filter_result(data, 0.25)
 
-    print(filtered_data)
 
     return jsonify({
         "data": filtered_data
@@ -188,19 +194,38 @@ def delete_schema():
         "schema": schema
     })
 
+@app.route("/check-all-objects", methods=["GET"])
+def check_all_objects():
+    query = (
+        client.query.get("Data", ["match"])
+        # Optionally retrieve the vector embedding by adding `vector` to the _additional fields
+        .with_limit(20)
+    )
+
+    print(query.do())
+
+    return jsonify({
+        "query": query.do()
+    })
+
 
 @app.route("/delete-object", methods=["POST"])
 def delete_object():
     id = request.get_json()["id"]
+    print()
+    print("id")
+    print(id)
     result = client.batch.delete_objects(
-        class_name='YourClassName',
+        class_name='Data',
         where={
             'path': ['match'],
             'operator': 'Equal',
             'valueString': id
         }
     )
+
     return jsonify({
+        "status": "success",
         "result": result
     })
 

@@ -13,9 +13,9 @@ export async function POST(req: Request) {
         // Parse the JSON data from the request body
         const { url, match, sender } = await req.json();
 
-        console.log("url: ", url);
-        console.log("match: ", match);
-        console.log("sender: ", sender);
+        console.log();
+        console.log("match route send req:");
+        console.log(match);
 
         // Continue with your code to make the fetch request
 
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
             match: match,
             sender: sender,
         });
-
+        
         if (!context) {
             // Handle error here if needed
             return new Response("Error", { status: 500 });

@@ -27,7 +27,7 @@ const AdminActions: React.FC = () => {
   };
 
   return (
-    <div className="fixed h-full p-4 border-r border-gray-300 bg-white w-60">
+    <div className="fixed h-full p-4 border-r border-gray-300 bg-white w-1/6">
       <div className="flex items-center space-x-4 mb-6">
         <img
           className="w-10 h-10 rounded-full"

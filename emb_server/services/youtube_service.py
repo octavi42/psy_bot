@@ -12,7 +12,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 
 from utils.utils import delete_file
-from services.openai_service import get_transcription
+from services.openai_service import get_transcription, get_transcription2, transcribe_audio_ro
 
 from weaviate import Client
 from utils.utils import chunk_split
@@ -154,22 +154,24 @@ def transcribe_youtube(url, path):
 
     # Transcribe the audio using Whisper and handle any errors during transcription
     try:
-        with open(audio_file_path, "rb") as file_handle:
-            # Make request to openai to get the transcription of the audio file
-            transcription = get_transcription(file_handle)
 
-            print("printing trasncription object")
-            print(transcription)
-            print("done")
+        # Make request to openai to get the transcription of the audio file
+        transcription = get_transcription2()
 
-            audio.text = chunk_split(transcription["text"], 512)
-            audio.full_text = transcription["text"]
+        print()
+        print("printing trasncription object")
+        print(transcription)
+        print("done")
+        print()
 
-            print("printing audio object")
-            print(audio.text)
-            print("done")
-            
-            return audio
+        audio.text = chunk_split(transcription["text"], 512)
+        audio.full_text = transcription["text"]
+
+        print("printing audio object")
+        print(chunk_split(transcription["text"], 512))
+        print("done")
+        
+        return audio
     except Exception as e:
         # Handle any unexpected exceptions during transcription and return an error message
         print(f"Transcription failed. Reason: {e}")

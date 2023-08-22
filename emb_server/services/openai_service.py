@@ -1,4 +1,16 @@
 import openai
+
+import whisper
+
+# from pydub import AudioSegment
+
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
+# from datasets import Audio, load_dataset
+import torch
+
+# import librosa
+import numpy as np
+
 import os
 from dotenv import load_dotenv
 
@@ -7,12 +19,78 @@ def get_embedding(text: str, model="text-embedding-ada-002"):
     return openai.Embedding.create(input=[text], model=model)['data'][0]['embedding']
 
 
-def get_transcription(file, model="whisper-1"):
+def get_transcription(model="whisper-1"):
     print("Getting transcription from openai...")
 
     load_dotenv()
 
+    file = open("services/youtube_audio_UkVvBQUABOw.mp3", 'rb')
+
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
     # use openai whisper api to get transcription of the audio file
-    return openai.Audio.transcribe(file=file, model=model)
+
+    response = openai.Audio.transcribe(
+        api_key=os.getenv('OPENAI_API_KEY'),
+        model=model,
+        file=file
+    )
+
+    print()
+    print("response")
+    print(response)
+    print()
+
+    return response
+
+
+def get_transcription2():
+    # audio_file_path = "youtube_audio_0ON9qNltoUU.wav"
+
+
+    model = whisper.load_model("base")
+    audio = "services/youtube_audio_UkVvBQUABOw.mp3"
+    result = model.transcribe(audio, fp16=False)
+    print(result["text"])
+
+    return result
+
+
+
+# def is_valid_audio(audio_file_path):
+#     try:
+#         audio = AudioSegment.from_file(audio_file_path)
+#         return True
+#     except Exception as e:
+#         print(f"Invalid audio file: {e}")
+#         return False
+    
+
+def transcribe_audio_ro(audio_file_path):
+    audio_file_path = "services/youtube_audio_UkVvBQUABOw.mp3"
+
+    # Check if the audio file is valid before processing
+    if not is_valid_audio(audio_file_path):
+        return "Invalid audio file."
+
+    # Load the Whisper processor and model
+    processor = WhisperProcessor.from_pretrained("gigant/whisper-medium-romanian")
+    model = WhisperForConditionalGeneration.from_pretrained("gigant/whisper-medium-romanian")
+
+    # Read the audio file as bytes
+    with open(audio_file_path, "rb") as audio_file:
+        audio_data = audio_file.read()
+
+    print("Loaded audio data:", audio_data[:100])  # Print the first 100 bytes of audio data
+
+    # Transcribe the audio
+    input_features = processor(audio_data, return_tensors="pt", sampling_rate=16_000).input_features
+    print("Input features:", input_features)  # Print the input features
+
+    predicted_ids = model.generate(input_features, max_length=448)
+    print("Predicted IDs:", predicted_ids)  # Print the predicted IDs
+
+    transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
+
+    # Print or return the transcription
+    return transcription

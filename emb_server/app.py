@@ -57,6 +57,7 @@ def index_file():
     try:
         # embed every text and add it to the weaviate class with the chatId.
         indexing_service.indexing_save(result, chat_id, client)
+        # print("dajh")
     except Exception as e:
         print(e)
         return jsonify({
@@ -95,7 +96,9 @@ def index_url():
     print("done transcribing")
 
 
-    indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
+    print(result.text)
+
+    indexing_service.indexing_save(client=client, saveClass=category, data=result.text, match=match, sender=sender, category="data", type="url")
     
     # indexing_save(client, saveClass, match, sender, category, data, type):
 
@@ -197,7 +200,8 @@ def delete_schema():
 @app.route("/check-all-objects", methods=["GET"])
 def check_all_objects():
     query = (
-        client.query.get("Data", ["match"])
+        client.query.get("Data", ["match", "data"])
+        # client.query.get("Data", ["data"])
         # Optionally retrieve the vector embedding by adding `vector` to the _additional fields
         .with_limit(20)
     )

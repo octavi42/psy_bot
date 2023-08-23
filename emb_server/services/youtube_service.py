@@ -156,7 +156,7 @@ def transcribe_youtube(url, path):
     try:
 
         # Make request to openai to get the transcription of the audio file
-        transcription = get_transcription2()
+        transcription = get_transcription2(audio_file_path)
 
         print()
         print("printing trasncription object")

@@ -203,7 +203,8 @@ def check_all_objects():
         client.query.get("Data", ["match", "data"])
         # client.query.get("Data", ["data"])
         # Optionally retrieve the vector embedding by adding `vector` to the _additional fields
-        .with_limit(20)
+        # .with_additional(["id"])
+        # .with_limit(20)
     )
 
     print(query.do())

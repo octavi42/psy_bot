@@ -44,13 +44,13 @@ def get_transcription(model="whisper-1"):
     return response
 
 
-def get_transcription2():
+def get_transcription2( filePath ):
     # audio_file_path = "youtube_audio_0ON9qNltoUU.wav"
 
 
-    model = whisper.load_model("base")
-    audio = "services/youtube_audio_UkVvBQUABOw.mp3"
-    result = model.transcribe(audio, fp16=False)
+    model = whisper.load_model("medium")
+    # audio = "services/youtube_audio_UkVvBQUABOw.mp3"
+    result = model.transcribe(filePath, fp16=False)
     print(result["text"])
 
     return result

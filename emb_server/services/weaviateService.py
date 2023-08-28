@@ -70,6 +70,62 @@ def createSchema(client: Client):
                 ]
             },
             {
+                "class": "Youtube",
+                "description": "Data of video format",
+                "properties": [
+                    {
+                        "dataType": ["text"],
+                        "name": "yt_id"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "match"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "sender"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "data"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "timeframe"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "type"
+                    },
+                ]
+            },
+            {
+                "class": "Audio",
+                "description": "Data of video format",
+                "properties": [
+                    {
+                        "dataType": ["text"],
+                        "name": "match"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "sender"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "data"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "timeframe"
+                    },
+                    {
+                        "dataType": ["text"],
+                        "name": "type"
+                    },
+                ]
+            },
+            {
                 "class": "Data",
                 "description": "Costum entered data",
                 "properties": [

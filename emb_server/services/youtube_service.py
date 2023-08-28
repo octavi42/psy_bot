@@ -15,8 +15,9 @@ from utils.utils import delete_file
 from services.openai_service import get_transcription, get_transcription2, transcribe_audio_ro
 
 from weaviate import Client
-from utils.utils import chunk_split
+from utils.utils import chunk_split, split_srt_text
 
+import json
 
 # download youtube video
 def download_youtube_video(url, output_path, id: str):
@@ -141,11 +142,12 @@ def transcribe_youtube(url, path):
     print("fail 2")
 
     class AudioInfo:
-        def __init__(self, id, mime_type, size, text=None, full_text=None):
+        def __init__(self, id, mime_type, size, text=None, timeframe=None, full_text=None):
             self.id = id
             self.mime_type = mime_type
             self.size = size
             self.text = text
+            self.timeframe = timeframe
             self.full_text = full_text
 
     audio = AudioInfo(video_id, mime_type, size)
@@ -156,7 +158,7 @@ def transcribe_youtube(url, path):
     try:
 
         # Make request to openai to get the transcription of the audio file
-        transcription = get_transcription2(audio_file_path)
+        transcription = get_transcription(audio_file_path)
 
         print()
         print("printing trasncription object")
@@ -164,11 +166,32 @@ def transcribe_youtube(url, path):
         print("done")
         print()
 
-        audio.text = chunk_split(transcription["text"], 512)
-        audio.full_text = transcription["text"]
+        transcription = split_srt_text(transcription)
+
+        # audio.text = chunk_split(transcription["text"], 512)
+        # audio.full_text = transcription["text"]
 
         print("printing audio object")
-        print(chunk_split(transcription["text"], 512))
+
+        text_list = []
+        timeframe_list = []
+
+        for item in transcription:
+            text_list.append(item["text"]),
+            timeframe_list.append(item["timeframe"])
+
+        audio.text = text_list
+        audio.timeframe = timeframe_list
+
+            # print(item)
+            # print()
+
+            # print(item["text"])
+            # print(item["timeframe"])
+
+        print(audio.text)
+        print(audio.timeframe)
+
         print("done")
         
         return audio

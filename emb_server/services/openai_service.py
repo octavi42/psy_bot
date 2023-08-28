@@ -19,24 +19,39 @@ def get_embedding(text: str, model="text-embedding-ada-002"):
     return openai.Embedding.create(input=[text], model=model)['data'][0]['embedding']
 
 
-def get_transcription(model="whisper-1"):
+def get_transcription(audio_file_path, model="whisper-1"):
     print("Getting transcription from openai...")
 
     load_dotenv()
 
-    file = open("services/youtube_audio_UkVvBQUABOw.mp3", 'rb')
+    # file = open("services/youtube_audio_UkVvBQUABOw.mp3", 'rb')
 
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
     # use openai whisper api to get transcription of the audio file
 
-    response = openai.Audio.transcribe(
-        api_key=os.getenv('OPENAI_API_KEY'),
-        model=model,
-        file=file
-    )
+    # response = openai.Audio.transcribe(
+    #     api_key=os.getenv('OPENAI_API_KEY'),
+    #     model=model,
+    #     file=file
+    # )
 
-    print()
+    # response = openai.Audio.transcribe(
+    #     file = audio_file_path,
+    #     model = "whisper-1",
+    #     response_format="text",
+    #     language="ro"
+    # )
+
+    with open(audio_file_path, "rb") as audio_file:
+        response = openai.Audio.transcribe(
+            file=audio_file,
+            model=model,
+            response_format="srt",
+            language="ro",
+            temperature=0.5,
+        )
+
     print("response")
     print(response)
     print()
@@ -44,13 +59,14 @@ def get_transcription(model="whisper-1"):
     return response
 
 
+
 def get_transcription2( filePath ):
     # audio_file_path = "youtube_audio_0ON9qNltoUU.wav"
 
 
-    model = whisper.load_model("medium")
+    model = whisper.load_model("large-v2")
     # audio = "services/youtube_audio_UkVvBQUABOw.mp3"
-    result = model.transcribe(filePath, fp16=False)
+    result = model.transcribe(filePath, language="ro", fp16=False)
     print(result["text"])
 
     return result
@@ -94,3 +110,18 @@ def transcribe_audio_ro(audio_file_path):
 
     # Print or return the transcription
     return transcription
+
+
+def gptTune(response):
+    messages =  [   {"role": "system", "content": "you are a professional text processing engineer"},
+                    {"role": "user", "content": f"{response} \n\n filter the text so you keep the important text, merge the data so I don't have such short phrases and the format should be the same: the count, the timeframe from what minute to what minute and the text, make sure one text is not longer than 512 characters"}
+                ]
+
+    chat = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", messages=messages
+    )
+
+
+    result = chat.choices[0].message.contentv
+
+    return result

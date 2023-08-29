@@ -12,7 +12,7 @@ const AdminDatabase: React.FC = () => {
     <AdminLayout>
       <ScrollProvider> {/* Wrap your main page content with ScrollProvider */}
         <div
-          className="p-8 relative h-screen flex w-full"
+          className="p-8 relative min-h-screen h-full flex w-full pb-40"
           style={{ scrollSnapAlign: "start" }}
         >
           <PageContent youtubeUrl={youtubeUrl} setYoutubeUrl={setYoutubeUrl} />

@@ -33,7 +33,6 @@ const PageContent: React.FC<PageContentProps> = ({ youtubeUrl, setYoutubeUrl }) 
                 type="text"
                 value={youtubeUrl}
                 onChange={handleYoutubeUrlChange}
-                className="w-full border rounded p-2"
               />
             </DataBox>
     
@@ -41,10 +40,23 @@ const PageContent: React.FC<PageContentProps> = ({ youtubeUrl, setYoutubeUrl }) 
               <input
                 type="file"
                 onChange={handleFileChange}
-                className="w-full"
               />
             </DataBox>
-    
+
+            <DataBox title="Q&A">
+                <p>Category</p>
+                <input type="text" />
+                <p>Question</p>
+                <input type="text" />
+                <p>Answer</p>
+                <input type="text" />
+            </DataBox>
+
+            <DataBox title="Text">
+                <p>Description</p>
+                <input type="text" />
+            </DataBox>
+
             <button
             // style for the component in center:   className="absolute bottom-4 w-48 left-0 right-0 mx-auto bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
             className="absolute bottom-4 left-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"

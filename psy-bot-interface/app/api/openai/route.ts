@@ -25,35 +25,31 @@ export async function POST(req: Request) {
     chatId: string;
   };
 
-  // console.log();
-  // console.log("body II");
-  // console.log(req.json());
-   
-  // console.log();
-  // console.log("messages: ",messages);
-  // console.log("chatid:", chatId);
-  
-  
-
-  // get the query param to have the chatId
-
   const latestUserMessage = messages[messages.length - 1] as Message;
   const userPrompt = latestUserMessage.content;
 
   const context = await fetcher<{
     data: {
       data: string;
+      timeframe: string;
+      yt_id: string;
     }[];
   }>("search", HTTPMethod.POST, false, {
     search_query: userPrompt,
-    chat_id: chatId,
+    // chat_id: chatId,
   });
 
-  console.log("context.data");
-  console.log( context.data );
   
-  const contextText = context.data.map((item) => item.data).join(" ");
+  console.log(context.data);
   
+  // const contextText = context.data.map((item) => item.data).join(" ");
+
+  const contextText = context.data.map((item) => {
+    return `${item.data} (video: ${buildYouTubeURL(item.yt_id)}) (timeframe = [${item.timeframe}])`; // Add the timeframe in square brackets
+  }).join(" ");
+
+  console.log("context");
+  console.log(contextText);
 
   const promptWithContext = getPromptWithContext(userPrompt, contextText);
 
@@ -74,5 +70,10 @@ export async function POST(req: Request) {
 }
 
 const getPromptWithContext = (userPrompt: string, context: string) => {
-  return `Considering the following context: ${context}, answer the following prompt: ${userPrompt} making refereces to the context I gave you. If you don't know the answer, type "I don't find anything useful for this question related to the data.`;
+  return `Considering the following context: ${context}, answer the following prompt: ${userPrompt} making refereces to the context I gave you, include the youtube video link and timeframe of if it exists one. If you don't know the answer, type "I don't find anything useful for this question related to the data.`;
 };
+
+function buildYouTubeURL(videoId: string): string {
+  const baseURL = "https://www.youtube.com/watch?v=";
+  return baseURL + videoId;
+}

@@ -165,31 +165,44 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
       </div>
       {/* Container for messages */}
       <AutoScrollContainer>
-        {combinedMessages.map((message) => {
-          const { content, id, role } = message;
-          const messageClassName =
-            role !== ChatRole.assistant ? "bg-accent" : "bg-white";
+      {combinedMessages.map((message) => {
+  const { content, id, role } = message;
+  const messageClassName =
+    role !== ChatRole.assistant ? "bg-accent" : "bg-white";
 
-          return (
-            <div
-              key={id}
-              className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
-            >
-              <div className="flex flex-col">
-                <h1
-                  className={`font-semibold ${
-                    role === ChatRole.assistant
-                      ? "text-blue-600"
-                      : "text-green-600"
-                  }`}
-                >
-                  {role === ChatRole.assistant ? "Assistant" : "You"}
-                </h1>
-                <p className="text-sm text-gray-700">{content}</p>
-              </div>
-            </div>
-          );
-        })}
+    const urlRegex = /https:\/\/www\.youtube\.com\/watch\?v=[^\s&]+(&t=\d+)?/g;
+
+  // Replace URLs with clickable links
+  const messageContentWithLinks = content.replace(
+    urlRegex,
+    (url) =>
+      `<a href="${url}" target="_blank" style="color: CornflowerBlue;">Youtube link</a>`
+  );
+
+  return (
+    <div
+      key={id}
+      className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
+    >
+      <div className="flex flex-col">
+        <h1
+          className={`font-semibold ${
+            role === ChatRole.assistant ? "text-blue-600" : "text-green-600"
+          }`}
+        >
+          {role === ChatRole.assistant ? "Assistant" : "You"}
+        </h1>
+        <p
+          className="text-sm text-gray-700"
+          dangerouslySetInnerHTML={{
+            __html: messageContentWithLinks,
+          }}
+        ></p>
+      </div>
+    </div>
+  );
+})}
+
         {isMessagesLoading && (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="animate-spin text-blue-500" size={64} />

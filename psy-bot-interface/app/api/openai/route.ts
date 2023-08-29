@@ -45,8 +45,11 @@ export async function POST(req: Request) {
   // const contextText = context.data.map((item) => item.data).join(" ");
 
   const contextText = context.data.map((item) => {
-    return `${item.data} (video: ${buildYouTubeURL(item.yt_id)}) (timeframe = [${item.timeframe}])`; // Add the timeframe in square brackets
+    const youtubeURL = buildYouTubeURL(item.yt_id);
+    const youtubeURLWithTimeframe = `${youtubeURL}&t=${getTimeInSeconds(item.timeframe)}`;
+    return `${item.data} (link= "${youtubeURLWithTimeframe}") (timeframe = [${item.timeframe}])`;
   }).join(" ");
+  
 
   console.log("context");
   console.log(contextText);
@@ -70,10 +73,50 @@ export async function POST(req: Request) {
 }
 
 const getPromptWithContext = (userPrompt: string, context: string) => {
-  return `Considering the following context: ${context}, answer the following prompt: ${userPrompt} making refereces to the context I gave you, include the youtube video link and timeframe of if it exists one. If you don't know the answer, type "I don't find anything useful for this question related to the data.`;
+  return `Considering the following context: ${context}, answer the following prompt: ${userPrompt} making references to the context I gave you, include the youtube video link after each phrase corelated with the video, make sure there are no characters before and after the link, if it exists. If you don't know the answer, type "I don't find anything useful for this question related to the data."`;
 };
 
 function buildYouTubeURL(videoId: string): string {
   const baseURL = "https://www.youtube.com/watch?v=";
   return baseURL + videoId;
 }
+
+function parseTime(time: string | undefined): number | undefined {
+  if (time === undefined) {
+    return undefined;
+  }
+
+  const timeParts = time.split(":").map(Number) as [number, number, number];
+
+  // Check if the time format is valid (e.g., "00:00:00")
+  if (timeParts.length !== 3 || timeParts.some(isNaN)) {
+    return undefined;
+  }
+
+  const [hoursPart, minutesPart, secondsPart] = timeParts;
+  const totalSeconds = hoursPart * 3600 + minutesPart * 60 + secondsPart;
+  return totalSeconds;
+}
+
+function getTimeInSeconds(timeframe: string | undefined): number | undefined {
+  if (timeframe === undefined) {
+    return undefined;
+  }
+
+  const [start, end] = timeframe.split(" --> ");
+
+  const startTime = parseTime(start);
+
+  if (startTime === undefined) {
+    return undefined;
+  }
+
+  // Calculate the time difference in seconds
+  const timeInSeconds = startTime;
+
+  console.log(timeInSeconds);
+
+  return timeInSeconds;
+}
+
+

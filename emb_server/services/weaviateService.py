@@ -139,10 +139,6 @@ def createSchema(client: Client):
                     },
                     {
                         "dataType": ["text"],
-                        "name": "category"
-                    },
-                    {
-                        "dataType": ["text"],
                         "name": "data"
                     },
                     {

@@ -37,6 +37,7 @@ const UploadComponent = ({ youtubeUrl }: UploadContentProps) => {
         method: "post",
         url: "/api/embed/create",
         data: {
+          endpoint: "index-url",
           url: youtubeUrl as string,
           match: match,
           sender: sender,

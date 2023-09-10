@@ -3,9 +3,57 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const objectsRouter = createTRPCRouter({
   
-    getAll: protectedProcedure.query( async ({ ctx }) => {
+  getAll: protectedProcedure
+    .input(
+      z
+        .object({
+          filter: z.string().optional(),
+          user: z.string().optional(),
+        })
+        .nullish(),
+    )
+    .query(async ({ ctx, input }) => {
+      const { filter, user } = input || { filter: "", user: "" };
+
+      console.log("filter: " + filter);
+      console.log("user: " + user);
+
+      if (filter == "All") {
+        const result = ctx.prisma.objects.findMany();
+        console.log("result: " + result);
+        
+
+        return result;
+      }
+
+      if (filter && user) {
+        // Filter by both filter and user
+        return await ctx.prisma.objects.findMany({
+          where: {
+            type: filter,
+            createdByUserId: user,
+          },
+        });
+      } else if (filter) {
+        // Filter by category only
+        return await ctx.prisma.objects.findMany({
+          where: {
+            type: filter,
+          },
+        });
+      } else if (user) {
+        // Filter by user only
+        return await ctx.prisma.objects.findMany({
+          where: {
+            type: user,
+          },
+        });
+      }
+
+      // No filter or user provided, return all data
       return await ctx.prisma.objects.findMany();
     }),
+
 
     createChatObject: protectedProcedure
       .input(

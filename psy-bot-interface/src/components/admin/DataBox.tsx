@@ -1,13 +1,17 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 
+// Update GeneralBoxProps to include the 'enabled' prop
 type GeneralBoxProps = {
   title?: string;
+  enabled?: boolean;
   children: ReactNode;
+  id: string;
+  endpoint?: string;
 };
 
-const DataBox = ({ title, children }: GeneralBoxProps) => {
+const DataBox: React.FC<GeneralBoxProps> = ({ title, enabled, children, id }) => {
   return (
-    <div className="h-max bg-gray-100 p-4 rounded-3xl">
+    <div className={`h-max bg-gray-100 p-4 rounded-3xl ${enabled ? '' : 'opacity-50 pointer-events-none'}`}>
       {title && <h2 className="text-lg font-semibold mb-2">{title}</h2>}
       <div className="input-container">
         {React.Children.map(children, (child, index) => {

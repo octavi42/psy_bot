@@ -5,6 +5,11 @@ import json
 
 from exceptions_results import OperationResult
 
+from services.openai_service import get_transcription, get_transcription2, transcribe_audio_ro
+
+from langchain.document_loaders import UnstructuredFileLoader
+from langchain.text_splitter import CharacterTextSplitter
+
 def is_youtube_video(url):
     youtube_regex = (
         r'(https?://)?(www\.)?'
@@ -17,6 +22,11 @@ def is_youtube_video(url):
         return True
     else:
         return False
+
+
+def build_youtube_url(video_id):
+    base_url = "https://www.youtube.com/watch?v="
+    return base_url + video_id
 
 
 def is_3d_related_text(text):
@@ -60,6 +70,7 @@ def is_image_type(mime_type):
     ]
 
     return mime_type in valid_image_mime_types
+
 
 
 def chunk_split(text, max_chunk_length):
@@ -173,6 +184,28 @@ def is_audio_type(mime_type):
     return mime_type in audio_mime_types
 
 
+def is_file_type(mime_type):
+    file_mime_types = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "text/plain",
+        "application/zip",
+        "application/x-rar-compressed",
+        "application/x-tar",
+        "application/gzip",
+        "application/x-7z-compressed",
+        "application/vnd.rar",
+        "application/x-msdownload",  # Executable files
+        "application/x-diskcopy",    # Disk image files
+        "application/octet-stream",  # Binary files
+    ]
+    return mime_type in file_mime_types
+
+
+
 def categorize_file(mimetype: str) -> str:
     # given the mime type
     # use the defined utils to find if the
@@ -219,3 +252,108 @@ def delete_file(output_path: str):
         message = f"Error occurred while deleting '{output_path}': {e}"
 
     return OperationResult(success=success, message=message)
+
+
+def save_file(file, mime_type):
+    print(mime_type)
+    if mime_type=="application/pdf":
+        save_path = "../assets/saved_files/files"
+    elif mime_type=="audio/mpeg":
+        save_path = "../assets/saved_files/audio"
+    else:
+        return None
+
+    file_path = os.path.join(save_path, file.filename)
+    file.save(file_path)
+
+    return file_path
+
+
+
+# transcribe youtube with whisper
+def transcribe_audio(audio_file_path, mime_type):
+
+    print("transcription start")
+
+
+    # get the path, type, size of the file
+    size = os.path.getsize(audio_file_path)
+
+    class AudioInfo:
+        def __init__(self, mime_type, size, text=None, timeframe=None, full_text=None):
+            self.mime_type = mime_type
+            self.size = size
+            self.text = text
+            self.timeframe = timeframe
+            self.full_text = full_text
+
+    audio = AudioInfo(mime_type, size)
+
+    # Transcribe the audio using Whisper and handle any errors during transcription
+    try:
+
+        # Make request to openai to get the transcription of the audio file
+        transcription = get_transcription(audio_file_path)
+
+        print()
+        print("printing trasncription object")
+        print(transcription)
+        print("done")
+        print()
+
+        transcription = split_srt_text(transcription)
+
+        # audio.text = chunk_split(transcription["text"], 512)
+        # audio.full_text = transcription["text"]
+
+        print("printing audio object")
+
+        text_list = []
+        timeframe_list = []
+
+        for item in transcription:
+            text_list.append(item["text"]),
+            timeframe_list.append(item["timeframe"])
+
+        audio.text = text_list
+        audio.timeframe = timeframe_list
+
+            # print(item)
+            # print()
+
+            # print(item["text"])
+            # print(item["timeframe"])
+
+        print(audio.text)
+        print(audio.timeframe)
+
+        print("done")
+        
+        return audio
+    except Exception as e:
+        # Handle any unexpected exceptions during transcription and return an error message
+        print(f"Transcription failed. Reason: {e}")
+    # finally:
+    #     # Delete the audio file and handle any errors during deletion
+    #     delete_result = delete_file(audio_file_path)
+    #     if not delete_result.success:
+    #         print(f"Deletion failed. Reason: {delete_result.message}")
+
+
+def extract_file_content(file_path):
+
+    # load the file
+    loader = UnstructuredFileLoader(file_path)
+    documents = loader.load()
+    documents_content = '\n'.join(doc.page_content for doc in documents)
+
+    # split the text into chunks
+    text_splitter = CharacterTextSplitter(
+        separator="\n\n",
+        chunk_size=1200,
+        chunk_overlap=200,
+        length_function=len,
+    )
+    chunks = text_splitter.split_text(documents_content)
+
+    return chunks

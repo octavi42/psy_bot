@@ -11,11 +11,11 @@ from exceptions_results import OperationResult, UnsupportedAudioFormatError
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
 
-from utils.utils import delete_file
 from services.openai_service import get_transcription, get_transcription2, transcribe_audio_ro
 
 from weaviate import Client
-from utils.utils import chunk_split, split_srt_text
+
+import utils
 
 import json
 
@@ -30,7 +30,7 @@ def download_youtube_video(url, output_path, id: str):
 
         # If download is successful, check if the audio format is supported
         mime_type = audio_stream.mime_type
-        if not is_valid_audio(mime_type):
+        if not utils.is_audio_type(mime_type):
             # If the audio format is not supported, raise an UnsupportedAudioFormatError
             raise UnsupportedAudioFormatError("Internal server error: Unsupported audio format from YouTube.")
 
@@ -47,39 +47,6 @@ def download_youtube_video(url, output_path, id: str):
         # Handle any other unexpected exceptions during download and return an OperationResult object with success=False, the error message, and no return_data
         return OperationResult(success=False, message=f"Error during download: {e}")
 
-# download youtube video
-def download_youtube_video(url, output_path, id: str):
-    audio_file_path = None
-    try:
-        # setup youtube object
-        youtube = YouTube(url)
-
-        # get the audio stream
-        audio_stream = youtube.streams.filter(only_audio=True).first()
-
-        # download the audio file
-        audio_file_path = audio_stream.download(output_path=output_path, filename=f"youtube_audio_{id}.mp3")
-
-        success=True
-        message="Successfully downloaded the audio file."
-    except PytubeError as e:
-
-        # Handle any PytubeError that might occur during fetching the video stream
-        success=False
-        message=f"Error during fetching the video stream: {e}"
-    except Exception as e:
-
-        # Handle any other unexpected exceptions during download
-        success=False
-        message=f"Error during download: {e}"
-
-    return_data = {
-        'path': audio_file_path,
-        'stream': audio_stream
-    }
-    
-    return OperationResult(success=success, message=message, return_data=return_data)
-    
 
 
 # youtube transcript setup
@@ -110,15 +77,11 @@ def extract_video_id(url):
         message = f"Error occurred while parsing the URL: {e}"
 
     return OperationResult(success=success, message=message, return_data=reutrn_data)
-    
-    
 
-# transcribe youtube with whisper
-def transcribe_youtube(url, path):
 
-    print("start")
 
-    # Extract video ID and handle any errors during extraction
+# download youtube video
+def download_youtube_video(url):
     extract_result = extract_video_id(url)
     if not extract_result.success:
         print(f"Video ID extraction failed. Reason: {extract_result.message}")
@@ -126,100 +89,42 @@ def transcribe_youtube(url, path):
     
     video_id = extract_result.return_data
 
-    print("fail 1")
-    
-    # Download the YouTube video and handle any errors during download
-    download_result = download_youtube_video(url, path, video_id)
-    if not download_result.success:
-        print(f"Download failed. Reason: {download_result.message}")
-        return
+    output_path_str = "../assets/saved_files/yt_videos"
 
-    # get the path, type, size of the file
-    audio_file_path = download_result.return_data['path']
-    mime_type = download_result.return_data['stream'].mime_type
-    size = os.path.getsize(audio_file_path)
-
-    print("fail 2")
-
-    class AudioInfo:
-        def __init__(self, id, mime_type, size, text=None, timeframe=None, full_text=None):
-            self.id = id
-            self.mime_type = mime_type
-            self.size = size
-            self.text = text
-            self.timeframe = timeframe
-            self.full_text = full_text
-
-    audio = AudioInfo(video_id, mime_type, size)
-
-    print("fail 3")
-
-    # Transcribe the audio using Whisper and handle any errors during transcription
+    audio_file_path = None
     try:
+        # setup youtube object
+        youtube = YouTube(url)
 
-        # Make request to openai to get the transcription of the audio file
-        transcription = get_transcription(audio_file_path)
+        # get the audio stream
+        audio_stream = youtube.streams.filter(only_audio=True).first()
 
-        print()
-        print("printing trasncription object")
-        print(transcription)
-        print("done")
-        print()
+        print("url")
+        print(video_id)
+        print(url)
+        print(audio_stream)
 
-        transcription = split_srt_text(transcription)
+        # download the audio file
+        audio_file_path = audio_stream.download(output_path=output_path_str, filename=f"youtube_audio_{video_id}.mp3")
 
-        # audio.text = chunk_split(transcription["text"], 512)
-        # audio.full_text = transcription["text"]
+        success=True
+        message="Successfully downloaded the audio file."
+    except PytubeError as e:
 
-        print("printing audio object")
-
-        text_list = []
-        timeframe_list = []
-
-        for item in transcription:
-            text_list.append(item["text"]),
-            timeframe_list.append(item["timeframe"])
-
-        audio.text = text_list
-        audio.timeframe = timeframe_list
-
-            # print(item)
-            # print()
-
-            # print(item["text"])
-            # print(item["timeframe"])
-
-        print(audio.text)
-        print(audio.timeframe)
-
-        print("done")
-        
-        return audio
+        # Handle any PytubeError that might occur during fetching the video stream
+        success=False
+        message=f"Error during fetching the video stream: {e}"
     except Exception as e:
-        # Handle any unexpected exceptions during transcription and return an error message
-        print(f"Transcription failed. Reason: {e}")
-    # finally:
-    #     # Delete the audio file and handle any errors during deletion
-    #     delete_result = delete_file(audio_file_path)
-    #     if not delete_result.success:
-    #         print(f"Deletion failed. Reason: {delete_result.message}")
+
+        # Handle any other unexpected exceptions during download
+        success=False
+        message=f"Error during download: {e}"
+
+    return_data = {
+        'path': audio_file_path,
+        'stream': audio_stream
+    }
+    
+    return OperationResult(success=success, message=message, return_data=return_data)
 
 
-def is_valid_audio(mime_type):
-    valid_audio_mime_types = [
-        "audio/mpeg",
-        "audio/x-wav",
-        "audio/ogg",
-        "audio/vorbis",
-        "audio/vnd.wav",
-        "audio/webm",
-        "audio/3gpp",
-        "audio/3gpp2",
-        "audio/aac",
-        "audio/mp4",
-        "audio/x-m4a",
-    ]
-
-    if mime_type not in valid_audio_mime_types:
-        return False
-    return True

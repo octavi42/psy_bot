@@ -5,59 +5,40 @@ from weaviate import Client
 
 def indexing_save(client, saveClass, data):
 
-    if saveClass == "Youtube":
+    # tweak data capture
+    if saveClass == "Youtube" or saveClass == "Audio":
+        timeframe = data["timeframe"]
 
-        print(data["text"])
+    # if "timeframe" in data and data["timeframe"]:
+    #     print("Timeframe is present and not empty:", data["timeframe"])
+    # else:
+    #     print("No timeframe or timeframe is empty")
 
-        df = pd.DataFrame(data["text"], columns=["chunk"])
+    # for key, value in data.items():
+    #     print(f"{key}: {value}")
 
-        print("df:")
-        print(df)
 
-        # Now apply the embedding function to the dataframe
-        df["embedding"] = df["chunk"].apply(openai_service.get_embedding)
+    # separate data in columns
+    df = pd.DataFrame(data["data"], columns=["chunk"])
+    # Now apply the embedding function to the dataframe
+    df["embedding"] = df["chunk"].apply(openai_service.get_embedding)
 
-        # {
-        #     "dataType": ["text"],
-        #     "name": "yt_id"
-        # },
-        # {
-        #     "dataType": ["text"],
-        #     "name": "match"
-        # },
-        # {
-        #     "dataType": ["text"],
-        #     "name": "sender"
-        # },
-        # {
-        #     "dataType": ["text"],
-        #     "name": "data"
-        # },
-        # {
-        #     "dataType": ["text"],
-        #     "name": "timeframe"
-        # },
-        # {
-        #     "dataType": ["text"],
-        #     "name": "type"
-        # },
 
-        # Iterate the dataframe and add every row to the weaviate class
-        for index, row in df.iterrows():
-            # embedding_result = openai_service.get_embedding(row["chunk"])
+    # # Iterate the dataframe and add every row to the weaviate class
+    for index, row in df.iterrows():
+        # embedding_result = openai_service.get_embedding(row["chunk"])
 
-            # Extract the relevant information from the embedding_result
+        # Extract the relevant information from the embedding_result
+        data["data"] = row["chunk"]
+        
+        # tweak apply
+        if saveClass == "Youtube" or saveClass == "Audio":
+            data["timeframe"] = timeframe[index]
 
-            data_object = {
-                "yt_id": data["yt_id"],
-                "match": data["match"],
-                "sender": data["sender"],
-                "data": row["chunk"],
-                "timeframe": data["timeframe"],
-                "type": data["type"]
-            }
-            client.data_object.create(
-                data_object=data_object,
-                class_name=saveClass,
-                vector=row["embedding"]  # Use the extracted embedding vector
-            )
+        uuid = client.data_object.create(
+            data_object=data,
+            class_name=saveClass,
+            vector=row["embedding"]  # Use the extracted embedding vector
+        )
+
+    return uuid

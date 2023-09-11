@@ -109,6 +109,22 @@ def index_url():
     url = request.get_json()["url"]
     category = "Youtube"
 
+    print("match: ", match)
+    print("sender: ", sender)
+    print("url: ", url)
+
+    # sleep for 5 seconds to let the file be saved
+    time.sleep(5)
+
+    print("woke up from sleep")
+
+    return jsonify({
+        "status": "success",
+        "data": "data",
+        "uuid": "uuid0001",
+        "fileType": "Youtube"
+    })
+
     # is_youtube_url = utils.is_youtube_video(url)
     # if is_youtube_url:
     #     print("In youtube if for processing it...")

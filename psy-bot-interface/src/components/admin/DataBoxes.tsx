@@ -1,13 +1,40 @@
 import React, { useState } from "react";
 import DataBox from "./DataBox";
 
+// const dataBoxesData = [
+//     {
+//         title: "Youtube URL:",
+//         id: "youtube",
+//         endpoint: "/your-endpoint-here",
+//         keys: ["url"]
+//     },
+//     {
+//         title: "File:",
+//         id: "file",
+//         endpoint: "/your-endpoint-here",
+//         keys: ["file"]
+//     },
+//     {
+//         title: "Q&A",
+//         id: "qa",
+//         endpoint: "/your-endpoint-here",
+//         keys: ["category", "question", "answer"]
+//     },
+//     {
+//         title: "Text",
+//         id: "data",
+//         endpoint: "/your-endpoint-here",
+//         keys: ["category", "data"]
+//     },
+//     // Add other DataBox configurations here
+// ]
+
 // Define DataBox components separately
 interface DataBoxProps {
     handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     inputContent: boolean[];
   }
-  
 
   const YoutubeDataBox = ({
     handleInputChange,
@@ -16,9 +43,10 @@ interface DataBoxProps {
     return (
       <DataBox title="Youtube URL:" enabled={inputContent[0]} id="youtube">
         <input
-          type="text"
-          onChange={handleInputChange}
-          onInput={handleInputChange}
+            id="url"
+            type="text"
+            onChange={handleInputChange}
+            onInput={handleInputChange}
         />
       </DataBox>
     );
@@ -31,12 +59,12 @@ interface DataBoxProps {
     inputContent,
   }: DataBoxProps) => (
     <DataBox
+        id="file"
         title="File:"
         enabled={inputContent[1]}
-        id="file"
-        endpoint="/default-endpoint"
     >
       <input
+        id="file"
         type="file"
         onChange={handleFileChange}
         onInput={handleInputChange}
@@ -52,14 +80,13 @@ interface DataBoxProps {
         title="Q&A"
         enabled={inputContent[2]}
         id="qa"
-        endpoint="/default-endpoint"
     >
       <p>Category</p>
-      <input type="text" onInput={handleInputChange} />
+      <input id="category" type="text" onInput={handleInputChange} />
       <p>Question</p>
-      <input type="text" onInput={handleInputChange} />
+      <input id="question" type="text" onInput={handleInputChange} />
       <p>Answer</p>
-      <input type="text" onInput={handleInputChange} />
+      <input id="answer" type="text" onInput={handleInputChange} />
     </DataBox>
   );
 
@@ -71,33 +98,34 @@ interface DataBoxProps {
         title="Text"
         enabled={inputContent[3]}
         id="data"
-        endpoint="/default-endpoint"
     >
-      <p>Description</p>
-      <input type="text" onInput={handleInputChange} />
+        <p>Category</p>
+        <input id="category" type="text" onInput={handleInputChange} />
+        <p>Description</p>
+        <input id="data" type="text" onInput={handleInputChange} />
     </DataBox>
   );
 
   // Define dataBoxes as an array of DataBox components
   export const dataBoxConfigurations = [
     {
-      component: YoutubeDataBox,
-      endpoint: "/your-endpoint-here",
-      id: "youtube",
+        component: YoutubeDataBox,
+        endpoint: "/index-url",
+        id: "youtube",
     },
     {
         component: FileDataBox,
-        endpoint: "/your-endpoint-here",
+        endpoint: "/index-file",
         id: "file",
     },
     {
         component: QaDataBox,
-        endpoint: "/your-endpoint-here",
+        endpoint: "/index-qa",
         id: "qa",
     },
     {
         component: TextDataBox,
-        endpoint: "/your-endpoint-here",
+        endpoint: "/index-about",
         id: "data",
     },
     // Add other DataBox configurations here

@@ -6,7 +6,6 @@ type GeneralBoxProps = {
   enabled?: boolean;
   children: ReactNode;
   id: string;
-  endpoint?: string;
 };
 
 const DataBox: React.FC<GeneralBoxProps> = ({ title, enabled, children, id }) => {

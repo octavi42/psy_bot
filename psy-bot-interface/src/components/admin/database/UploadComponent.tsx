@@ -1,14 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import cuid from "cuid";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 
 type UploadContentProps = {
-  youtubeUrl: string;
+  inuse: boolean;
+  endpoint: string;
+  reqElems: { key: string; value: any }[];
 };
 
-const UploadComponent = ({ youtubeUrl }: UploadContentProps) => {
+const UploadComponent = ({ reqElems, endpoint }: UploadContentProps) => {
+
+  useEffect(() => {
+    // This effect will run whenever trackReqElems is updated
+    // console.log("trackReqElems updated:", reqElems);
+    console.log("endpoint updated:", endpoint);
+    
+  }, [reqElems]); // Only re-run the effect if trackReqElems changes
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Track loading state
@@ -16,54 +26,77 @@ const UploadComponent = ({ youtubeUrl }: UploadContentProps) => {
   const { mutate: saveObject } = api.object.createChatObject.useMutation();
   const { mutate: updateTranscription } = api.object.changeTranscription.useMutation();
 
-  const handleUpload = async () => {
-    try {
-      setIsLoading(true); // Set loading state to true while waiting for response
+  let abortController: AbortController | undefined; // Declare abortController at the outermost scope
 
-      const match = cuid() as string;
-      const sender = sessionData?.user.id as string;
+if (typeof window !== "undefined") {
+  // Check if 'window' is defined (client-side)
+  abortController = new AbortController();
 
-      saveObject(
-        {
-          id: match,
-          title: title,
-          description: description,
-          fileType: "youtube_video",
-        },
-        { onError(error) { console.log(error) } }
-      );
-        
-      await axios({
-        method: "post",
-        url: "/api/embed/create",
-        data: {
-          endpoint: "index-url",
-          url: youtubeUrl as string,
-          match: match,
-          sender: sender,
-        },
-        headers: { "Content-Type": "application/json" },
-      })
-        .then(function (response) {
-            updateTranscription(
-                {
-                    id: match,
-                    transcription: response.data
-                },
-                { onError(error) { console.log(error) } }
-            )
-        })
-        .catch(function (response) {
-          console.error(response);
-        })
-        .finally(() => {
-          setIsLoading(false); // Set loading state back to false after response
-        });
-    } catch (error) {
-      console.error("Upload failed:", error);
-      setIsLoading(false); // Make sure to set loading state back to false in case of an error
+  // Attach an event listener to the beforeunload event
+  window.addEventListener("beforeunload", () => {
+    // Abort the pending fetch request when the user is navigating away
+    if (abortController) {
+      abortController.abort();
     }
-  };
+  });
+}
+
+const handleUpload = async () => {
+  try {
+    setIsLoading(true); // Set loading state to true while waiting for response
+
+    const match = cuid() as string;
+    const sender = sessionData?.user.id as string;
+
+    // Construct the request data object with match and sender
+    const requestData: { [key: string]: any } = {
+      endpoint: endpoint,
+      match: match,
+      sender: sender,
+      userId: sessionData?.user.id,
+      title: title,
+      description: description,
+    };
+
+    // Merge reqElems into requestData
+    for (const { key, value } of Object.values(reqElems)) {
+      requestData[key] = value;
+    }
+
+    console.log("requestData:", requestData);
+
+    if (!abortController) {
+      // Create a new AbortController if it's not already defined
+      abortController = new AbortController();
+    }
+
+    // Send the data to your server with the AbortController signal
+    await axios({
+      method: "post",
+      url: "/api/embed/create",
+      data: requestData,
+      headers: { "Content-Type": "application/json" },
+      signal: abortController.signal,
+    })
+      .then(function (response) {
+        console.log(response.data);
+      })
+      .catch(function (response) {
+        console.error(response);
+      })
+      .finally(() => {
+        console.log("finally");
+        setIsLoading(false); // Set loading state back to false after response
+      });
+
+    // Do not reassign abortController to the localAbortController
+    // Remove this line: abortController = localAbortController;
+  } catch (error) {
+    console.error("Upload failed:", error);
+    setIsLoading(false); // Make sure to set loading state back to false in case of an error
+  }
+};
+
 
   return (
     <div className="w-1/4">

@@ -10,16 +10,13 @@ type AdminDatabaseProps = {};
 const AdminDatabase: React.FC<AdminDatabaseProps> = () => {
   const [inuse, setInuse] = useState<boolean>(false); // Example for inuse
   const [endpoint, setEndpoint] = useState<string>(""); // Example for endpoint
+  const [classId, setClassId] = useState<string>(""); // Example for classId
+
+  const [sharedData, setSharedData] = useState<any>(null);
+
 
   // array of request server elements, with name and value
   const [reqElems, setReqElems] = useState<{ key: string; value: any }[]>([]);
-
-  const [youtubeUrl, setYoutubeUrl] = useState<string>("");
-  const [file, setFile] = useState<File | null>(null); // Example for file
-  const [answer, setAnswer] = useState<string>(""); // Example for answer
-  const [question, setQuestion] = useState<string>(""); // Example for question
-  const [category, setCategory] = useState<string>(""); // Example for category
-  const [data, setData] = useState<string>(""); // Example for data
 
   return (
     <AdminLayout>
@@ -29,14 +26,16 @@ const AdminDatabase: React.FC<AdminDatabaseProps> = () => {
           style={{ scrollSnapAlign: "start" }}
         >
           <PageContent
-            setInuse={setInuse}
             setEndpoint={setEndpoint}
             setReqElems={setReqElems}
+            setClassId={setClassId}
+            sharedData={sharedData}
           />
           <UploadComponent
-            inuse={inuse}
             endpoint={endpoint}
             reqElems={reqElems}
+            classId={classId}
+            setSharedData={setSharedData}
           />
         </div>
         <ObjectList />

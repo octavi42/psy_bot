@@ -110,23 +110,23 @@ interface DataBoxProps {
   export const dataBoxConfigurations = [
     {
         component: YoutubeDataBox,
-        endpoint: "/index-url",
-        id: "youtube",
+        endpoint: "index-url",
+        id: "Youtube",
     },
     {
         component: FileDataBox,
-        endpoint: "/index-file",
-        id: "file",
+        endpoint: "index-file",
+        id: "File",
     },
     {
         component: QaDataBox,
-        endpoint: "/index-qa",
-        id: "qa",
+        endpoint: "index-qa",
+        id: "QA",
     },
     {
         component: TextDataBox,
-        endpoint: "/index-about",
-        id: "data",
+        endpoint: "index-about",
+        id: "About",
     },
     // Add other DataBox configurations here
   ];

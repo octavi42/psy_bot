@@ -40,6 +40,14 @@ model Session {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+
+enum UserRole {
+    user
+    member
+    contributor
+    admin
+}
+
 model User {
     id            String    @id @default(cuid())
     name          String?
@@ -55,14 +63,26 @@ model User {
     objects       Objects[]
     accounts      Account[]
     sessions      Session[]
+    saveState     SavingProcess?
 }
 
-enum UserRole {
-    user
-    member
-    contributor
-    admin
+
+enum SaveState {
+    saved
+    saving
+    unknown
 }
+
+model SavingProcess {
+    id              String    @id @default(cuid())
+    
+    state           SaveState @default(unknown)
+    message         String?   @db.Text
+    userId          String    @unique
+
+    user            User      @relation(fields: [userId], references: [id])
+}
+
 
 model Chat {
     id              String   @id @default(cuid())
@@ -79,6 +99,7 @@ enum ChatRole {
     assistant
 }
 
+
 model Messages {
     id        String   @id @default(cuid())
     chatId    String
@@ -88,6 +109,7 @@ model Messages {
 
     chat      Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
+
 
 model Objects {
     id String @id @default(cuid())
@@ -100,6 +122,7 @@ model Objects {
     
     createdByUser   User       @relation(fields: [createdByUserId], references: [id])
 }
+
 
 model VerificationToken {
     identifier String

@@ -1,7 +1,8 @@
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import axios from "axios";
-import { SetStateAction, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
+
 
 const ObjectList = () => {
   const { data: sessionData } = useSession();
@@ -17,6 +18,8 @@ const ObjectList = () => {
     user,
   });
   const { mutate: deleteObject } = api.object.deleteObject.useMutation();
+
+
 
   const handleFilterChange = (newFilter: string, newUser: string) => {
     setFilter(newFilter); // Update the filter state

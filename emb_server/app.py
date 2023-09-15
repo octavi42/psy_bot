@@ -310,45 +310,55 @@ def delete_object():
     delete_from_sender = request.get_json()["sender"]
     id = request.get_json()["id"]
 
+    print()
+    print("delete class:" + delete_class)
+    print("delete_from_sender: " + delete_from_sender)
+    print("id: " + id)
+    print()
 
-    if delete_class == "null":
-        return jsonify({
-            "status": "error",
-            "message": "No class was provided"
-        })
+    # if delete_class == "null":
+    #     return jsonify({
+    #         "status": "error",
+    #         "message": "No class was provided"
+    #     })
     
     
-    if delete_from_sender != "null" and id == "null":
-        result = client.batch.delete_objects(
-            class_name=delete_class,
-            where={
-                'path': ['match'],
-                'operator': 'Equal',
-                'valueString': delete_from_sender
-            }
-        )
+    # if delete_from_sender != "null" and id == "null":
+    #     result = client.batch.delete_objects(
+    #         class_name=delete_class,
+    #         where={
+    #             'path': ['match'],
+    #             'operator': 'Equal',
+    #             'valueString': delete_from_sender
+    #         }
+    #     )
 
-        return jsonify({
-            "status": "success",
-            "result": result
-        })
+    #     return jsonify({
+    #         "status": "success",
+    #         "result": result
+    #     })
     
     
-    if delete_from_sender == "null" and id != "null":
-        result = client.batch.delete_objects(
-            class_name=delete_class,
-            uuid=id
-        )
+    # if delete_from_sender == "null" and id != "null":
+    #     result = client.batch.delete_objects(
+    #         class_name=delete_class,
+    #         uuid=id
+    #     )
 
-        return jsonify({
-            "status": "success",
-            "result": result
-        })
+    #     return jsonify({
+    #         "status": "success",
+    #         "result": result
+    #     })
 
+
+    # return jsonify({
+    #     "status": "error",
+    #     "result": "No class was provided"
+    # })
 
     return jsonify({
-        "status": "error",
-        "result": "No class was provided"
+        "status": "success",
+        "message": "data"
     })
 
 

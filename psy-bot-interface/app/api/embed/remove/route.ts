@@ -2,29 +2,24 @@ import { HTTPMethod, fetcher } from "~/lib/fetcher";
 
 export const runtime = "edge";
 
-type Message = {
-  role: string;
-  content: string;
+type ContextType = {
+    status: string,
+    message: string
+    // other properties as needed
 };
 
 
 export async function POST(req: Request) {
     try {
         // Parse the JSON data from the request body
-        const { match } = await req.json();
+        const { ...requestParams } = await req.json();
 
-        console.log("match: ", match);
+        console.log("params: ", requestParams);
         // console.log("user: ", user);
 
         // Continue with your code to make the fetch request
 
-        const context = await fetcher<{
-            data: {
-                data: string;
-            }[];
-        }>("delete-object", HTTPMethod.POST, false, {
-            id: match,
-        });
+        const context: ContextType = await fetcher<ContextType>("delete-object", HTTPMethod.POST, false, requestParams);
 
         if (!context) {
             // Handle error here if needed
@@ -32,9 +27,9 @@ export async function POST(req: Request) {
         }
 
         // Handle the response data as needed
-        console.log(context.data);
+        console.log(context);
 
-        return new Response(JSON.stringify(context.data), { status: 200, headers: { "Content-Type": "application/json" } });
+        return new Response(JSON.stringify(context.message), { status: 200, headers: { "Content-Type": "application/json" } });
     } catch (error) {
         // Handle any exception or error
         console.error(error);

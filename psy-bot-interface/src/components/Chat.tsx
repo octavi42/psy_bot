@@ -26,11 +26,12 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
 
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
-  const { messages: aiMessages, input, handleInputChange, handleSubmit } = useChat({
+  const [isBotProcessing, setIsBotProcessing] = useState(false);
+
+  const { messages: aiMessages, setMessages, append, reload, input, isLoading, stop, handleInputChange, handleSubmit } = useChat({
     api: `/api/openai`,
-    body: {},
     onResponse() {
-      setActiveChatId(chatId as string);
+      console.log("request happening");
     },
     onFinish(message) {
       saveChatMessage(
@@ -45,12 +46,22 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
           },
         }
       );
+      setIsBotProcessing(false)
     },
+    onError(error){
+      console.log("error");
+      console.log(error)
+      handleError()
+    }
   });
+
+  const handleError = () => {
+    setIsBotProcessing(false)
+  }
 
   const { data: chatsData } = api.chat.getChats.useQuery();
 
-  const { data: messagesData, isFetching: isMessagesLoading } =
+  const { data: messagesData, isFetching: isMessagesLoading, refetch: refetchMessages } =
     api.chat.getMessages.useQuery(
       {
         chatId: chatId as string,
@@ -65,7 +76,13 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
   const handleSubmitInFunction = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    // here we want to also save user message to our database;
+  
+    if (isLoading) {
+      stop();
+      setIsBotProcessing(false);
+      return;
+    }
+  
     saveChatMessage(
       {
         chatId: chatId as string,
@@ -73,13 +90,28 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
         text: input,
       },
       {
+        onSuccess() {
+          refetchMessages();
+        },
         onError(error) {
           console.log(error);
         },
       }
     );
-    handleSubmit(e);
+  
+    setIsBotProcessing(true);
+  
+    // Append the user's message to the list of messages
+    append({
+      content: input,
+      id: 'some-unique-id', // You can generate a unique ID here
+      role: ChatRole.user,
+      createdAt: new Date(),
+    });
+  
+    setActiveChatId(chatId as string);
   };
+  
 
   const [dbMessages, setDbMessages] = useState<Message[]>([]);
 
@@ -95,7 +127,18 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
     }
   }, [messagesData]);
 
-  const combinedMessages = activeChatId === chatId ? [...dbMessages, ...aiMessages] : dbMessages;
+
+  useEffect(() => {
+    console.log(`chat chanegd to ${chatId}`);
+    console.log(aiMessages);
+    setIsBotProcessing(false)
+    stop()
+    
+    
+  }, [chatId]);
+
+  const assistantMessages = aiMessages.filter((message) => message.role === ChatRole.assistant);
+  const combinedMessages = activeChatId === chatId ? [...dbMessages, ...assistantMessages] : dbMessages;
 
 
   // console.log("combinedMessages");
@@ -112,46 +155,103 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
       </div>
       {/* Container for messages */}
       <AutoScrollContainer>
-        {combinedMessages.map((message) => {
-          const { content, id, role } = message;
-          const messageClassName =
-            role !== ChatRole.assistant ? "bg-accent" : "bg-white";
+      {combinedMessages.map((message) => {
+        const { content, id, role } = message;
+        const messageClassName =
+          role !== ChatRole.assistant ? "bg-accent" : "bg-white";
 
-          return (
-            <div
-              key={id}
-              className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
-            >
-              <div className="flex flex-col">
-                <h1
-                  className={`font-semibold ${
-                    role === ChatRole.assistant
-                      ? "text-blue-600"
-                      : "text-green-600"
-                  }`}
-                >
-                  {role === ChatRole.assistant ? "Assistant" : "You"}
-                </h1>
-                <p className="text-sm text-gray-700">{content}</p>
-              </div>
+          const urlRegex = /https:\/\/www\.youtube\.com\/watch\?v=[^\s&]+(&t=\d+)?/g;
+
+        // Replace URLs with clickable links
+        const messageContentWithLinks = content.replace(
+          urlRegex,
+          (url) =>
+            `<a href="${url}" target="_blank" style="color: CornflowerBlue;">Youtube link</a>`
+        );
+
+        return (
+          <div
+            key={id}
+            className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
+          >
+            <div className="flex flex-col">
+              <h1
+                className={`font-semibold ${
+                  role === ChatRole.assistant ? "text-blue-600" : "text-green-600"
+                }`}
+              >
+                {role === ChatRole.assistant ? "Assistant" : "You"}
+              </h1>
+              <p
+                className="text-sm text-gray-700"
+                dangerouslySetInnerHTML={{
+                  __html: messageContentWithLinks,
+                }}
+              ></p>
             </div>
-          );
-        })}
+          </div>
+        );
+      })}
+
         {isMessagesLoading && (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="animate-spin text-blue-500" size={64} />
           </div>
         )}
+
+        {/* Display the reload button if there are no assistant messages */}
+        {!isLoading && !(combinedMessages.length === 0) && !(combinedMessages[combinedMessages.length-1]?.role === 'assistant') && (
+          <div className="flex justify-center mt-3">
+            <button
+              onClick={() => {
+                const lastDbMessage = dbMessages[dbMessages.length - 1];
+                if (lastDbMessage) {
+                  setIsBotProcessing(true)
+                  
+                  console.log("append messages");
+                  console.log(aiMessages);
+                  console.log(lastDbMessage);
+
+                  append(lastDbMessage);
+
+                  console.log(aiMessages);
+            
+                  reload();
+                }
+              }
+              }
+              className="text-blue-500 m-2"
+            >
+              Reload Message
+            </button>
+          </div>
+          )}
+
       </AutoScrollContainer>
+
       {/* Input box */}
-      <div className="h-[55px] bg-accent px-2">
-        <form className="w-full" onSubmit={handleSubmitInFunction}>
-          <Input
-            className="h-[55px] w-full bg-white border rounded-md p-2"
+      <div className="h-[55px] bg-accent px-2 m-2">
+        <form className="w-full h-full flex items-center" onSubmit={handleSubmitInFunction}>
+          <input
+            className="h-full w-full bg-white border rounded-md p-2"
             placeholder="Say something..."
             value={input}
             onChange={handleInputChange}
           />
+          <button
+            type="submit"
+            className={`btn h-full p-2 rounded-lg ${isBotProcessing ? 'bg-red-500 hover:bg-red-700' : 'bg-blue-500 hover:bg-blue-700'} text-white ml-2`}
+            // disabled={isBotProcessing}
+          >
+            {isBotProcessing ? (
+              <div className="flex items-center">
+                <Loader2 className="animate-spin mr-2 text-white" size={16} />
+                Stop
+              </div>
+            ) : (
+              'Submit'
+            )}
+          </button>
         </form>
       </div>
     </div>

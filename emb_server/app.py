@@ -10,7 +10,12 @@ from dotenv import load_dotenv
 from services import openai_service, youtube_service, file_service, weaviateService
 from flask import Flask, jsonify, request
 
+
+import io
+
 from services import indexing_service
+
+from utils.utils import split_srt_text
 
 load_dotenv()
 
@@ -37,72 +42,170 @@ def index_file():
     # take the file from the request and
     # put the mime type into a variable
     # take the chat id from the request to create the new weaiate class
+
+
+    match = request.form["match"]
+    sender = request.form["sender"]
     file = request.files["file"]
+
 
     # get the mime type of the file
     mime_type = file.content_type
 
-    chat_id = request.form["chat_id"]
-    print("got chat_id: ", chat_id)
-    # check the file if it is audio
-    # or if it is somethig else ( will assume text for now )
-    result: list[str] = []
+    # save the file here "../assets/saved_files/yt_videos"
+    file_path = utils.save_file(file, mime_type)
+
+
+    if utils.is_file_type(mime_type):
+        print("processing file...")
+        category = "Data"
+
+        # extract the content of the file
+        chunks = utils.extract_file_content(file_path)
+
+        # create the data model
+        data = {
+            "match": match,
+            "sender": sender,
+            "data": chunks,
+            "type": "pdf"
+        }
+
+        # save the data to weaviate
+        uuid = indexing_service.indexing_save(client=client, saveClass=category, data=data)
+
+
+
     if utils.is_audio_type(mime_type):
         print("processing audio...")
-        result: list[str] = file_service.process_audio_file(file)
-    else:
-        print("processing text...")
-        # result: list[str] = file_service.process_text_file(file)
+        category = "Audio"
 
-    try:
-        # embed every text and add it to the weaviate class with the chatId.
-        indexing_service.indexing_save(result, chat_id, client)
-    except Exception as e:
-        print(e)
-        return jsonify({
-            "response": "error"
-        })
+        # transcribe audio
+        audio = utils.transcribe_audio(file_path, mime_type)
+
+        data = {
+            "match": match,
+            "sender": sender,
+            "data": audio.text,
+            "timeframe": audio.timeframe,
+            "type": "audio"
+        }
+
+        # save the data to weaviate
+        uuids = indexing_service.indexing_save(client=client, saveClass=category, data=data)
+
 
     return jsonify({
-        "response": "ok"
+        "response": audio.text,
+        "uuids": uuids
     })
 
 
 @app.route("/index-url", methods=["POST"])
 def index_url():
 
-    url = request.get_json()["url"]
     match = request.get_json()["match"]
     sender = request.get_json()["sender"]
-    category = "Data"
+    url = request.get_json()["url"]
+    category = "Youtube"
 
-    print()
-    print("match that I got in the server:")
-    print(match)
+    print("match: ", match)
+    print("sender: ", sender)
+    print("url: ", url)
+
+    
 
     is_youtube_url = utils.is_youtube_video(url)
-
     if is_youtube_url:
         print("In youtube if for processing it...")
 
-        print(url)
+        # get the youtube id
+        youtube_id = youtube_service.extract_video_id(url).return_data
 
-        result = youtube_service.transcribe_youtube(url, "../assets/saved_files/yt_videos")
+        # download the youtube video
+        download_result = youtube_service.download_youtube_video(url)
+        
+        # transcribe audio
+        audio_file_path = download_result.return_data['path']
+        mime_type = download_result.return_data['stream'].mime_type
+        audio = utils.transcribe_audio(audio_file_path, mime_type)
 
     else:
         print("do normal page processing of the information")
 
-    print("done transcribing")
+    data = {
+        "yt_id": youtube_id,
+        "match": match,
+        "sender": sender,
+        "data": audio.text,
+        "timeframe": audio.timeframe,
+        "type": "audio"
+    }
 
-
-    indexing_service.indexing_save(client=client, saveClass="Data", data=result.text, match=match, sender=sender, category="data", type="url")
+    uuids = indexing_service.indexing_save(client=client, saveClass=category, data=data)
     
     # indexing_save(client, saveClass, match, sender, category, data, type):
 
     # embed every text and add it to the weaviate class.
 
+    print(len(audio.text))
+    print(len(uuids))
+
     return jsonify({
-        "data": result.full_text
+        "status": "success",
+        "data": audio.text,
+        "uuids": uuids,
+        "yt_id": youtube_id,
+        "fileType": "Youtube"
+    })
+
+
+
+@app.route("/index-qa", methods=["POST"])
+def index_qa():
+    match = request.get_json()["match"]
+    sender = request.get_json()["sender"]
+    question = request.get_json()["question"]
+    answer = request.get_json()["answer"]
+    question_category = request.get_json()["question_category"]
+    category = "QA"
+
+    data = {
+        "match": match,
+        "sender": sender,
+        "category": question_category,
+        "question": question,
+        "answer": answer,
+    }
+
+    save_result = indexing_service.indexing_save(client=client, saveClass=category, data=data)
+
+    return jsonify({
+        "data": data,
+        "result": save_result
+    })
+
+
+@app.route("/index-about", methods=["POST"])
+def index_about():
+    match = request.get_json()["match"]
+    sender = request.get_json()["sender"]
+    about_category = request.get_json()["about_category"]
+    data = request.get_json()["data"]
+    category = "About"
+
+    data = {
+        "match": match,
+        "sender": sender,
+        "category": about_category,
+        "data": data,
+    }
+
+    save_result = indexing_service.indexing_save(client=client, saveClass=category, data=data)
+
+    return jsonify({
+        "data": data,
+        "result": save_result
     })
 
 
@@ -119,7 +222,7 @@ def search():
 
     response = (
         client.query
-        .get("Data", ["data"])
+        .get("Youtube", ["data", "timeframe", "yt_id"])
         .with_near_vector({
             "vector": search_query_embedding,
         })
@@ -133,7 +236,7 @@ def search():
     print(response)
 
 
-    data = response["data"]["Get"]["Data"]
+    data = response["data"]["Get"]["Youtube"]
 
     # filter the data in terms of accuracy
     filtered_data = utils.filter_result(data, 0.25)
@@ -165,20 +268,6 @@ def check_schema():
 
 
 
-@app.route("/command", methods=["GET"])
-def command():
-    if client.schema.exists("Cll3vq1g6000d0tw7p7l4vdsg"):
-        print("need to delete the classes")
-        response = "classes deleted"
-        client.schema.delete_class("Cll3vq1g6000d0tw7p7l4vdsg")
-    else:
-        print("no classes found")
-        response = "classes not deleted"
-    
-    return jsonify({
-        "response": response
-    })
-
 @app.route("/create-schema", methods=["GET"])
 def create_schema():
     schema = weaviateService.createSchema(client)
@@ -197,9 +286,12 @@ def delete_schema():
 @app.route("/check-all-objects", methods=["GET"])
 def check_all_objects():
     query = (
-        client.query.get("Data", ["match"])
+        client.query.get("Youtube", ["match", "data", "timeframe", "sender"])
+        # client.query.get("Audio", ["match", "data", "timeframe"])
+        # client.query.get("Data", ["match", "data"])
         # Optionally retrieve the vector embedding by adding `vector` to the _additional fields
-        .with_limit(20)
+        .with_additional(["id"])
+        # .with_limit(20)
     )
 
     print(query.do())
@@ -211,22 +303,53 @@ def check_all_objects():
 
 @app.route("/delete-object", methods=["POST"])
 def delete_object():
+    delete_class = request.get_json()["class"]
+    delete_from_sender = request.get_json()["sender"]
     id = request.get_json()["id"]
-    print()
-    print("id")
-    print(id)
-    result = client.batch.delete_objects(
-        class_name='Data',
-        where={
-            'path': ['match'],
-            'operator': 'Equal',
-            'valueString': id
-        }
-    )
+
+
+    if delete_class == "null":
+        return jsonify({
+            "status": "error",
+            "message": "No class was provided"
+        })
+    
+    
+    if delete_from_sender != "null" and id == "null":
+        result = client.batch.delete_objects(
+            class_name=delete_class,
+            where={
+                'path': ['sender'],
+                'operator': 'Equal',
+                'valueString': delete_from_sender
+            }
+        )
+
+        return jsonify({
+            "status": "success",
+            "result": result
+        })
+    
+    
+    if delete_from_sender == "null" and id != "null":
+        result = client.batch.delete_objects(
+            class_name=delete_class,
+            where={
+                'path': ['match'],
+                'operator': 'Equal',
+                'valueString': id
+            }
+        )
+
+        return jsonify({
+            "status": "success",
+            "result": result
+        })
+
 
     return jsonify({
-        "status": "success",
-        "result": result
+        "status": "error",
+        "result": "No class was provided"
     })
 
 

@@ -91,4 +91,20 @@ export const chatRouter = createTRPCRouter({
         },
       });
     }),
+
+    deleteChatMessage: protectedProcedure
+    .input(
+      z.object({
+        id: z.string()
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const { id } = input
+
+      return ctx.prisma.messages.delete({
+        where: {
+          id: id as string
+        }
+      })
+    })
 });

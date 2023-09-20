@@ -14,13 +14,15 @@ import NextAuth from "next-auth/next";
 import { compare } from "bcrypt";
 import { log } from "console";
 
+import { UserRole } from "@prisma/client";
+
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      role: UserRole;
       // ...other properties
-      // role: UserRole;
     } & DefaultSession["user"];
   }
 
@@ -85,10 +87,13 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        console.log(user.role);
+
         return {
           id: user.id + '',
           name: user.name,
           email: user.email,
+          role: user.role,
         }
 
         
@@ -119,6 +124,7 @@ export const authOptions: NextAuthOptions = {
       if (account) {
         token.accessToken = account.access_token
         token.id = user.id
+        token.role = user.role
       }
       return token
     },
@@ -127,6 +133,7 @@ export const authOptions: NextAuthOptions = {
       // Send properties to the client, like an access_token and user id from a provider.
       session.user.email = token.email
       session.user.id = token.id + ""
+      session.user.role = token.role
       
       return session
     }

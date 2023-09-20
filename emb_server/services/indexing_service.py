@@ -2,31 +2,36 @@ import pandas as pd
 from services import openai_service, youtube_service, file_service, weaviateService
 from weaviate import Client
 
+def indexing_save(client, saveClass, data):
 
-def indexing_save(client, saveClass, data, match, sender, category, type):
-    # Assuming data is a list of values
-    print("result:")
-    print(data)
+    # tweak data capture
+    if saveClass == "Youtube" or saveClass == "Audio":
+        timeframe = data["timeframe"]
 
-    df = pd.DataFrame(data, columns=["chunk"])
-
-    print("df:")
-    print(df)
-
+    # separate data in columns
+    df = pd.DataFrame(data["data"], columns=["chunk"])
     # Now apply the embedding function to the dataframe
     df["embedding"] = df["chunk"].apply(openai_service.get_embedding)
 
+    # uuid array definition
+    object_uuids = []
+
     # Iterate the dataframe and add every row to the weaviate class
     for index, row in df.iterrows():
-        data_object = {
-            "match": match,
-            "sender": sender,
-            "category": category,
-            "data": row["chunk"],
-            "type": type
-        }
-        client.data_object.create(
-            data_object=data_object,
+        # Extract the relevant information from the embedding_result
+        data["data"] = row["chunk"]
+        
+        # tweak apply
+        if saveClass == "Youtube" or saveClass == "Audio":
+            data["timeframe"] = timeframe[index]
+
+        object_uuid = client.data_object.create(
+            data_object=data,
             class_name=saveClass,
-            vector=row["embedding"]
+            vector=row["embedding"]  # Use the extracted embedding vector
         )
+
+        # append the uuid to the list
+        object_uuids.append(object_uuid)
+
+    return object_uuids

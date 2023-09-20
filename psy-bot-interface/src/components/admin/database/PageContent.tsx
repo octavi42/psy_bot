@@ -1,60 +1,169 @@
-import { useState } from "react";
-import DataBox from "../DataBox"
+import React, { useEffect, useState } from "react";
+import DataBox from "../DataBox";
+import { dataBoxConfigurations } from "../DataBoxes";
 import { useScrollContext } from "~/components/ScrollProvider";
 
-type PageContentProps = {
-    youtubeUrl: string;
-    setYoutubeUrl: (url: string) => void;
-};
+import { api } from "~/utils/api";
+import { SaveState } from "@prisma/client";
 
-const PageContent: React.FC<PageContentProps> = ({ youtubeUrl, setYoutubeUrl }) => {
-    const handleYoutubeUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setYoutubeUrl(event.target.value);
-    };
-
-    const [file, setFile] = useState<File | null>(null);
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-        //   setFile(event.target.files[0]);
-        } else {
-          setFile(null);
-        }
-      };
-
-      const { scrollToBottom } = useScrollContext();
-
-      return (
-        <div className="w-4/5 mr-8">
-          <h2 className="text-2xl font-semibold mb-6">Admin Database</h2>
-          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-            <DataBox title="Youtube URL:">
-              <input
-                type="text"
-                value={youtubeUrl}
-                onChange={handleYoutubeUrlChange}
-                className="w-full border rounded p-2"
-              />
-            </DataBox>
-    
-            <DataBox title="File:">
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="w-full"
-              />
-            </DataBox>
-    
-            <button
-            // style for the component in center:   className="absolute bottom-4 w-48 left-0 right-0 mx-auto bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
-            className="absolute bottom-4 left-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
-              onClick={scrollToBottom} // Scroll to bottom when button is clicked
-            >
-              Scroll to Bottom
-            </button>
-          </div>
-        </div>
-      );
+interface PageContentProps {
+  setEndpoint: React.Dispatch<React.SetStateAction<string>>;
+  setReqElems: React.Dispatch<React.SetStateAction<{ key: string; value: any }[]>>;
+  setClassId: React.Dispatch<React.SetStateAction<string>>;
+  sharedData: any;
 }
+
+const PageContent: React.FC<PageContentProps> = ({
+  setEndpoint,
+  setReqElems,
+  setClassId,
+  sharedData
+}) => {
+
+  
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      // setFile(event.target.files[0]);
+    } else {
+      // setFile(null);
+    }
+  };
+
+  // keep track of the reqElems from setReqElems
+  const [trackReqElems, setTrackReqElems] = useState<{ key: string; value: any }[]>([]);
+  const [trackIndex, setTrackIndex] = useState<number>(0);
+  const [trackEndpoint, setTrackEndpoint] = useState<string>("");
+  const [trackClassId, setTrackClassId] = useState<string>("");
+
+  const { data: processState, refetch: processRefatch } = api.saveState.getState.useQuery();
+
+  // const refetchProcessState = async () => {
+  //   const { refetch } = api.saveState.getState.useQuery();
+  //   await refetch();
+  // };
+
+
+  useEffect(() => {    
+    // adjust the input focus of the elements
+    if (trackReqElems.length === 0) {
+      setInputContent(Array(numDataBoxes).fill(true));
+      setEndpoint("");
+      setClassId("");
+    } else {
+      const newInputContent = Array(numDataBoxes).fill(false);
+      newInputContent[trackIndex] = true;
+      setInputContent(newInputContent);
+      // setClassId(trackReqElems[0].value);
+
+      setEndpoint(trackEndpoint);
+      setClassId(trackClassId);
+    }
+
+    // send the reqElems
+    setReqElems(trackReqElems);
+
+  }, [trackReqElems]);
+
+  
+
+  useEffect(() => {
+
+    processRefatch()
+  }, [sharedData]);
+
+  const numDataBoxes = 4;
+  const [inputContent, setInputContent] = useState<boolean[]>(
+    Array(numDataBoxes).fill(true)
+  );
+
+  const handleInputChange = (
+    classId: string,
+    event: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+    endpoint: string
+  ) => {
+
+    const key = event.target.id;
+    const value = event.target.value;
+
+    setTrackEndpoint(endpoint);
+    setTrackClassId(classId);
+  
+    setTrackReqElems((prevTrackReqElems) => {
+      const indexKey = prevTrackReqElems.findIndex((elem) => elem.key === key);
+
+      setTrackIndex(index);
+  
+      if (value.length === 0) {
+        // remove the key from the trackReqElems
+        if (indexKey !== -1) {
+          return prevTrackReqElems.filter((elem) => elem.key !== key);
+        }
+        return prevTrackReqElems;
+      }
+  
+      // create the key with the id and append if it doesn't exist
+      if (indexKey === -1) {
+        const updatedTrackReqElems = [...prevTrackReqElems, { key: key, value: value }];
+        return updatedTrackReqElems;
+      }
+
+      // Update the key with the id if it exists
+      if (indexKey !== -1) {
+        const updatedTrackReqElems = prevTrackReqElems.map((elem) =>
+          elem.key === key ? { ...elem, value: value } : elem
+        );
+        return updatedTrackReqElems;
+      }
+  
+      return prevTrackReqElems;
+    });
+  };
+  
+
+  const { scrollToBottom } = useScrollContext();
+
+  return (
+    <div className="w-4/5 mr-8">
+      <h2 className="text-2xl font-semibold mb-6">Admin Database</h2>
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+        {/* Conditionally render based on isSaving */}
+        {(processState?.state === SaveState.saving) ? (
+          <div>
+            <p>Saving...</p>
+            {/* You can display a loading bar here */}
+          </div>
+        ) : (
+          dataBoxConfigurations.map((config, index) => {
+            const { component: DataBoxComponent, endpoint, id } = config;
+
+            // Define the props you want to pass to DataBoxComponent
+            const dataBoxProps = {
+              handleFileChange,
+              handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                handleInputChange(id, event, index, endpoint), // Pass the index to handleInputChange
+              inputContent,
+            };
+
+            return (
+              <div key={index}>
+                <DataBoxComponent {...dataBoxProps} />
+              </div>
+            );
+          })
+        )}
+
+        <button
+          className="absolute bottom-4 left-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+          onClick={scrollToBottom}
+        >
+          Scroll to Bottom
+        </button>
+      </div>
+    </div>
+  );
+
+};
 
 export default PageContent;

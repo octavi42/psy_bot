@@ -3,6 +3,7 @@ import { chatRouter } from "~/server/api/routers/chat";
 import { objectsRouter } from "~/server/api/routers/object";
 import { createTRPCRouter } from "~/server/api/trpc";
 import { object } from "zod";
+import { saveStateRouter } from "./routers/save_state";
 
 /**
  * This is the primary router for your server.
@@ -12,7 +13,8 @@ import { object } from "zod";
 export const appRouter = createTRPCRouter({
   example: exampleRouter,
   chat: chatRouter,
-  object: objectsRouter
+  object: objectsRouter,
+  saveState: saveStateRouter
 });
 
 // export type definition of API

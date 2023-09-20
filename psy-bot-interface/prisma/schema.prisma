@@ -112,15 +112,24 @@ model Messages {
 
 
 model Objects {
-    id String @id @default(cuid())
+    id String @id   @default(cuid())
 
     createdByUserId String
     title           String
-    description     String?
-    transcription   String? @db.Text
+    description     String?     @db.Text
+    transcription   Transcriptions[]
+    youtube_id      String?
     type            String
     
-    createdByUser   User       @relation(fields: [createdByUserId], references: [id])
+    createdByUser   User                @relation(fields: [createdByUserId], references: [id])
+}
+
+model Transcriptions {
+  id        String      @id @default(cuid())
+  objectId  String
+  text      String      @db.Text
+
+  object    Objects     @relation(fields: [objectId], references: [id], onDelete: Cascade)
 }
 
 

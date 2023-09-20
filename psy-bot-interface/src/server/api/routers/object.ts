@@ -60,13 +60,13 @@ export const objectsRouter = createTRPCRouter({
         z.object({
           id: z.string(),
           title: z.string(),
-          description: z.string(),
-          transcription: z.string().optional(),
+          description: z.string().optional(),
+          youtubeId: z.string().optional(),
           fileType: z.string(),
         })
       )
       .mutation(({ ctx, input }) => {
-        const { id, title, description, transcription, fileType } = input;
+        const { id, title, description, youtubeId, fileType } = input;
 
         return ctx.prisma.objects.create({
           data: {
@@ -74,10 +74,39 @@ export const objectsRouter = createTRPCRouter({
               createdByUserId: ctx.session.user.id,
               title: title,
               description: description,
-              transcription: transcription,
+              youtube_id: youtubeId,
               type: fileType,
           },
         });
+      }),
+
+
+    createTranscriptionObject: protectedProcedure
+      .input(
+        z.object({
+          id: z.string(),
+          transcriptions: z.array(z.string()).optional(),
+          uuids: z.array(z.string()).optional()
+        })
+      )
+      .mutation(({ ctx, input }) => {
+        const { id, transcriptions, uuids } = input;
+
+        if (!transcriptions || !uuids) {
+          throw new Error("Transcriptions not provided");
+        }
+
+        for (let i=0; i<transcriptions.length; i++) {
+          ctx.prisma.transcriptions.create({
+            data: {
+              id: uuids[i],
+              objectId: id,
+              text: transcriptions[i] + '',
+            },
+          });
+        }
+
+        return "Success";
       }),
 
 

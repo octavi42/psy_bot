@@ -3,6 +3,7 @@ import axios from "axios";
 import cuid from "cuid";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
+import { SaveState } from "@prisma/client";
 
 type UploadContentProps = {
   endpoint: string;
@@ -12,11 +13,6 @@ type UploadContentProps = {
 };
 
 const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadContentProps) => {
-
-  const fetchDataAndSetSharedData = async () => {
-    await refetchProcessState();
-    setSharedData(processState);
-  };
 
   useEffect(() => {
     // This effect will run whenever trackReqElems is updated
@@ -39,17 +35,33 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
   const { data: sessionData } = useSession();
   const { mutate: saveObject } = api.object.createChatObject.useMutation();
   const { mutate: updateTranscription } = api.object.changeTranscription.useMutation();
+  // const { mutate: updateState } = api.saveState.changeState.useMutation();
 
   const { data: processState, refetch: refetchProcessState } = api.saveState.getState.useQuery();
-  // const { mutate: updateProcessState } = api.saveState.changeState.useMutation();
+  const { mutate: updateProcessState } = api.saveState.changeState.useMutation();
 
   const [isUploadDisabled, setIsUploadDisabled] = useState(true); // Track loading state
   // const isUploadDisabled = isLoading || !title || !description; // Define the condition for disabling the upload button
 
 
+
+  function firstFunction(_callback: () => void){
+    // do some asynchronous work
+    // and when the asynchronous stuff is complete
+    setTimeout(function() {
+      updateProcessState({ state: "saving", message: "Success!" });
+      _callback();
+    }, 0);
+  }
+
+
   const handleUpload = async () => {
     try {
       setIsLoading(true); // Set loading state to true while waiting for response
+
+      firstFunction(function() {
+        setSharedData(true)
+      });
   
       const match = cuid() as string;
       const sender = sessionData?.user.id as string;
@@ -62,6 +74,7 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
         sender: sender,
         userId: sessionData?.user.id,
         title: title,
+        description: description? description : "",
       };
   
       // Merge reqElems into requestData
@@ -78,20 +91,17 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
       })
       .finally(() => {
         console.log("finnaly");
-        fetchDataAndSetSharedData()
-        console.log("Process State:", processState);
+        setSharedData(false)
         setIsLoading(false);
       })
       .then(() => {
         console.log("then");
-        fetchDataAndSetSharedData()
-        console.log("Process State:", processState);
+        setSharedData(false)
         setIsLoading(false);
       })
       .catch(() => {
         console.log("catch");
-        fetchDataAndSetSharedData()
-        console.log("Process State:", processState);
+        setSharedData(false)
         setIsLoading(false);
       });
       

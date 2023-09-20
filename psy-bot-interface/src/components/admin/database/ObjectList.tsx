@@ -19,7 +19,16 @@ const ObjectList = () => {
   });
   const { mutate: deleteObject } = api.object.deleteObject.useMutation();
 
+  // Add state to track description expansion
+  const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
 
+  // Function to toggle description expansion
+  const toggleDescriptionExpansion = (itemId: string) => {
+    setExpandedDescriptions((prevState) => ({
+      ...prevState,
+      [itemId]: !prevState[itemId],
+    }));
+  };
 
   const handleFilterChange = (newFilter: string, newUser: string) => {
     setFilter(newFilter); // Update the filter state
@@ -41,17 +50,22 @@ const ObjectList = () => {
     }
   };
 
-  const handleDeleteItem = (itemId: string) => {
+  const handleDeleteItem = (itemId: string, type: string) => {
     const match = itemId;
     const sender = sessionData?.user.id as string;
+
+    // Construct the request data object with match and sender
+    const requestData: { [key: string]: any } = {
+      class: type,
+      id: match,
+      sender: "null"
+    };
 
     try {
       axios({
         method: "post",
         url: "/api/embed/remove",
-        data: {
-          match: match,
-        },
+        data: requestData,
         headers: { "Content-Type": "application/json" }, // Change to "application/json"
       })
         .then(function () {
@@ -148,19 +162,37 @@ const ObjectList = () => {
           {objectData?.map((data) => (
             <li
               key={data.id}
-              className="bg-white p-4 rounded-lg shadow-md hover:bg-blue-100 transition-colors"
+              className="bg-white p-4 rounded-lg shadow-md hover:bg-blue-100 transition-colors relative group"
             >
-              {/* Delete button */}
-              <button
-                className="absolute right-4 top-4 p-2 text-red-600 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                onClick={() => handleDeleteItem(data.id)} // Call your delete function here
-              >
-                Delete
-              </button>
               {/* Item content */}
-              <div>
-                <h3 className="text-lg font-semibold">{data.title}</h3>
-                <p className="text-gray-600">{data.description}</p>
+              <div className="flex items-center">
+                <div>
+                  <h3 className="text-lg font-semibold">{data.title}</h3>
+                  {/* Add CSS for expandable description */}
+                  <p
+                    className={`text-gray-600 ${
+                      expandedDescriptions[data.id] ? "max-h-full overflow-y-auto" : "max-h-16 overflow-hidden"
+                    }`}
+                  >
+                    {data.description}
+                  </p>
+                  {/* Toggle button for description expansion */}
+                  { data.description && data.description.length > 100 && (
+                    <button
+                      className="text-blue-500 hover:underline"
+                      onClick={() => toggleDescriptionExpansion(data.id)}
+                    >
+                      {expandedDescriptions[data.id] ? "Read Less" : "Read More"}
+                    </button>
+                  )}
+                </div>
+                {/* Delete button */}
+                <button
+                  className="ml-auto p-2 text-red-600 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  onClick={() => handleDeleteItem(data.id, data.type)} // Call your delete function here
+                >
+                  Delete
+                </button>
               </div>
             </li>
           ))}

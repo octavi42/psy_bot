@@ -36,7 +36,7 @@ const PageContent: React.FC<PageContentProps> = ({
   const [trackEndpoint, setTrackEndpoint] = useState<string>("");
   const [trackClassId, setTrackClassId] = useState<string>("");
 
-  const { data: processState } = api.saveState.getState.useQuery();
+  const { data: processState, refetch: processRefatch } = api.saveState.getState.useQuery();
 
   // const refetchProcessState = async () => {
   //   const { refetch } = api.saveState.getState.useQuery();
@@ -65,21 +65,12 @@ const PageContent: React.FC<PageContentProps> = ({
 
   }, [trackReqElems]);
 
-  // useEffect(() => {
-  //   console.log("Process State:", processState);
   
-  //   // Log the API response if available
-  //   // if (processFetch === "success") {
-  //   //   console.log("API Response:", processState.data); // Replace with the correct property
-  //   // }
-  
-  // }, [processFetch]);
 
-    useEffect(() => {
-      
-      console.log('Process State data 2:', processState);
+  useEffect(() => {
 
-    }, [sharedData]);
+    processRefatch()
+  }, [sharedData]);
 
   const numDataBoxes = 4;
   const [inputContent, setInputContent] = useState<boolean[]>(
@@ -138,8 +129,7 @@ const PageContent: React.FC<PageContentProps> = ({
       <h2 className="text-2xl font-semibold mb-6">Admin Database</h2>
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
         {/* Conditionally render based on isSaving */}
-        
-        {processState?.state !== SaveState.saved ? ( 
+        {(processState?.state === SaveState.saving) ? (
           <div>
             <p>Saving...</p>
             {/* You can display a loading bar here */}

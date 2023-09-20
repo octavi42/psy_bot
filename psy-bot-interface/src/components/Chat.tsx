@@ -74,17 +74,15 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
   const selectedChat = chatsData?.find((chat) => chat.id === chatId) as Chat;
 
   const handleSubmitInFunction = (e: React.FormEvent<HTMLFormElement>) => {
-    setMessages([])
-    
     e.preventDefault();
     e.stopPropagation();
-    
+  
     if (isLoading) {
-      stop()
-      setIsBotProcessing(false)
-      return
+      stop();
+      setIsBotProcessing(false);
+      return;
     }
-
+  
     saveChatMessage(
       {
         chatId: chatId as string,
@@ -92,36 +90,28 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
         text: input,
       },
       {
-        onSuccess(){
-          refetchMessages()
+        onSuccess() {
+          refetchMessages();
         },
         onError(error) {
           console.log(error);
         },
       }
-    )
-    
-    setIsBotProcessing(true)
-
-
-    handleSubmit(e);
-
-    // here we want to also save user message to our database;
-
-
+    );
+  
+    setIsBotProcessing(true);
+  
+    // Append the user's message to the list of messages
+    append({
+      content: input,
+      id: 'some-unique-id', // You can generate a unique ID here
+      role: ChatRole.user,
+      createdAt: new Date(),
+    });
+  
     setActiveChatId(chatId as string);
   };
-
-  // const reloadMessage = (e: React.FormEvent<HTMLFormElement>) => {
-  //   try {
-  //     console.log("re 1");
-  //     handleSubmitInFunction()
-  //     console.log("re 2");
-  //   } catch (error) {
-  //     console.log("error");
-  //     console.log(error);
-  //   }
-  // };
+  
 
   const [dbMessages, setDbMessages] = useState<Message[]>([]);
 
@@ -166,42 +156,42 @@ const CurrentChat: FunctionComponent<ChatComponentProps> = () => {
       {/* Container for messages */}
       <AutoScrollContainer>
       {combinedMessages.map((message) => {
-  const { content, id, role } = message;
-  const messageClassName =
-    role !== ChatRole.assistant ? "bg-accent" : "bg-white";
+        const { content, id, role } = message;
+        const messageClassName =
+          role !== ChatRole.assistant ? "bg-accent" : "bg-white";
 
-    const urlRegex = /https:\/\/www\.youtube\.com\/watch\?v=[^\s&]+(&t=\d+)?/g;
+          const urlRegex = /https:\/\/www\.youtube\.com\/watch\?v=[^\s&]+(&t=\d+)?/g;
 
-  // Replace URLs with clickable links
-  const messageContentWithLinks = content.replace(
-    urlRegex,
-    (url) =>
-      `<a href="${url}" target="_blank" style="color: CornflowerBlue;">Youtube link</a>`
-  );
+        // Replace URLs with clickable links
+        const messageContentWithLinks = content.replace(
+          urlRegex,
+          (url) =>
+            `<a href="${url}" target="_blank" style="color: CornflowerBlue;">Youtube link</a>`
+        );
 
-  return (
-    <div
-      key={id}
-      className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
-    >
-      <div className="flex flex-col">
-        <h1
-          className={`font-semibold ${
-            role === ChatRole.assistant ? "text-blue-600" : "text-green-600"
-          }`}
-        >
-          {role === ChatRole.assistant ? "Assistant" : "You"}
-        </h1>
-        <p
-          className="text-sm text-gray-700"
-          dangerouslySetInnerHTML={{
-            __html: messageContentWithLinks,
-          }}
-        ></p>
-      </div>
-    </div>
-  );
-})}
+        return (
+          <div
+            key={id}
+            className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
+          >
+            <div className="flex flex-col">
+              <h1
+                className={`font-semibold ${
+                  role === ChatRole.assistant ? "text-blue-600" : "text-green-600"
+                }`}
+              >
+                {role === ChatRole.assistant ? "Assistant" : "You"}
+              </h1>
+              <p
+                className="text-sm text-gray-700"
+                dangerouslySetInnerHTML={{
+                  __html: messageContentWithLinks,
+                }}
+              ></p>
+            </div>
+          </div>
+        );
+      })}
 
         {isMessagesLoading && (
           <div className="flex h-full items-center justify-center">

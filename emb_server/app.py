@@ -92,12 +92,12 @@ def index_file():
         }
 
         # save the data to weaviate
-        uuid = indexing_service.indexing_save(client=client, saveClass=category, data=data)
+        uuids = indexing_service.indexing_save(client=client, saveClass=category, data=data)
 
 
     return jsonify({
         "response": audio.text,
-        "uuid": uuid
+        "uuids": uuids
     })
 
 
@@ -113,55 +113,52 @@ def index_url():
     print("sender: ", sender)
     print("url: ", url)
 
-    # sleep for 5 seconds to let the file be saved
-    time.sleep(5)
+    
 
-    print("woke up from sleep")
+    is_youtube_url = utils.is_youtube_video(url)
+    if is_youtube_url:
+        print("In youtube if for processing it...")
 
-    return jsonify({
-        "status": "success",
-        "data": "data",
-        "uuid": "uuid0001",
-        "fileType": "Youtube"
-    })
+        # get the youtube id
+        youtube_id = youtube_service.extract_video_id(url).return_data
 
-    # is_youtube_url = utils.is_youtube_video(url)
-    # if is_youtube_url:
-    #     print("In youtube if for processing it...")
-
-    #     # get the youtube id
-    #     youtube_id = youtube_service.extract_video_id(url).return_data
-
-    #     # download the youtube video
-    #     download_result = youtube_service.download_youtube_video(url)
+        # download the youtube video
+        download_result = youtube_service.download_youtube_video(url)
         
-    #     # transcribe audio
-    #     audio_file_path = download_result.return_data['path']
-    #     mime_type = download_result.return_data['stream'].mime_type
-    #     audio = utils.transcribe_audio(audio_file_path, mime_type)
+        # transcribe audio
+        audio_file_path = download_result.return_data['path']
+        mime_type = download_result.return_data['stream'].mime_type
+        audio = utils.transcribe_audio(audio_file_path, mime_type)
 
-    # else:
-    #     print("do normal page processing of the information")
+    else:
+        print("do normal page processing of the information")
 
-    # data = {
-    #     "yt_id": youtube_id,
-    #     "match": match,
-    #     "sender": sender,
-    #     "data": audio.text,
-    #     "timeframe": audio.timeframe,
-    #     "type": "audio"
-    # }
+    data = {
+        "yt_id": youtube_id,
+        "match": match,
+        "sender": sender,
+        "data": audio.text,
+        "timeframe": audio.timeframe,
+        "type": "audio"
+    }
 
-    # uuid = indexing_service.indexing_save(client=client, saveClass=category, data=data)
+    uuids = indexing_service.indexing_save(client=client, saveClass=category, data=data)
     
     # indexing_save(client, saveClass, match, sender, category, data, type):
 
     # embed every text and add it to the weaviate class.
 
+    print(len(audio.text))
+    print(len(uuids))
+
     return jsonify({
-        "data": "data",
-        # "uuid": uuid
+        "status": "success",
+        "data": audio.text,
+        "uuids": uuids,
+        "yt_id": youtube_id,
+        "fileType": "Youtube"
     })
+
 
 
 @app.route("/index-qa", methods=["POST"])
@@ -289,11 +286,11 @@ def delete_schema():
 @app.route("/check-all-objects", methods=["GET"])
 def check_all_objects():
     query = (
-        # client.query.get("Youtube", ["match", "data", "timeframe"])
-        client.query.get("Audio", ["match", "data", "timeframe"])
+        client.query.get("Youtube", ["match", "data", "timeframe", "sender"])
+        # client.query.get("Audio", ["match", "data", "timeframe"])
         # client.query.get("Data", ["match", "data"])
         # Optionally retrieve the vector embedding by adding `vector` to the _additional fields
-        # .with_additional(["id"])
+        .with_additional(["id"])
         # .with_limit(20)
     )
 
@@ -310,55 +307,49 @@ def delete_object():
     delete_from_sender = request.get_json()["sender"]
     id = request.get_json()["id"]
 
-    print()
-    print("delete class:" + delete_class)
-    print("delete_from_sender: " + delete_from_sender)
-    print("id: " + id)
-    print()
 
-    # if delete_class == "null":
-    #     return jsonify({
-    #         "status": "error",
-    #         "message": "No class was provided"
-    #     })
+    if delete_class == "null":
+        return jsonify({
+            "status": "error",
+            "message": "No class was provided"
+        })
     
     
-    # if delete_from_sender != "null" and id == "null":
-    #     result = client.batch.delete_objects(
-    #         class_name=delete_class,
-    #         where={
-    #             'path': ['match'],
-    #             'operator': 'Equal',
-    #             'valueString': delete_from_sender
-    #         }
-    #     )
+    if delete_from_sender != "null" and id == "null":
+        result = client.batch.delete_objects(
+            class_name=delete_class,
+            where={
+                'path': ['sender'],
+                'operator': 'Equal',
+                'valueString': delete_from_sender
+            }
+        )
 
-    #     return jsonify({
-    #         "status": "success",
-    #         "result": result
-    #     })
+        return jsonify({
+            "status": "success",
+            "result": result
+        })
     
     
-    # if delete_from_sender == "null" and id != "null":
-    #     result = client.batch.delete_objects(
-    #         class_name=delete_class,
-    #         uuid=id
-    #     )
+    if delete_from_sender == "null" and id != "null":
+        result = client.batch.delete_objects(
+            class_name=delete_class,
+            where={
+                'path': ['match'],
+                'operator': 'Equal',
+                'valueString': id
+            }
+        )
 
-    #     return jsonify({
-    #         "status": "success",
-    #         "result": result
-    #     })
+        return jsonify({
+            "status": "success",
+            "result": result
+        })
 
-
-    # return jsonify({
-    #     "status": "error",
-    #     "result": "No class was provided"
-    # })
 
     return jsonify({
-        "status": "success",
-        "message": "data"
+        "status": "error",
+        "result": "No class was provided"
     })
 
 

@@ -1,26 +1,42 @@
 import UserChats from "../../../components/UserChats";
 import CurrentChat from "../../../components/Chat";
-
 import { api } from "~/utils/api";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { GetServerSidePropsContext } from "next";
+import ChatLayout from "~/components/ChatLayout";
+import { requireAuthentication } from "~/actions/auth";
 
 const MainPage = () => {
-  
-    
+  const router = useRouter();
+  const { chatId } = router.query;
+
+  // // Fetch messages data
+  const { data: messagesData } =
+    api.chat.getMessages.useQuery(
+      {
+        chatId: chatId as string,
+      },
+      {
+        enabled: !!chatId,
+      }
+    );
+
+    // If messagesData exists, map and rename the field
+  const messagesWithContent = messagesData?.map((message) => ({
+    ...message,
+    content: message.text, // Rename the field from 'text' to 'content'
+    // Optionally, you can omit the 'text' field if needed
+    // text: undefined,
+  }));
 
   return (
-    <main className="flex h-screen bg-gradient-to-b">
-      <div className="w-1/4 bg-gray flex-shrink-0">
-        {/* Left Section: User Chats */}
-        <UserChats />
-      </div>
-      <div className="flex-1 bg-white shadow">
-        {/* Right Section: Current Chat */}
-        <CurrentChat />
-      </div>
-    </main>
+    <ChatLayout>
+      <CurrentChat initialMessages={messagesWithContent}/>
+    </ChatLayout>
   );
 };
 
 export default MainPage;
+
+export const getServerSideProps = requireAuthentication

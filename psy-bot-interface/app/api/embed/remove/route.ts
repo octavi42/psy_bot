@@ -14,9 +14,6 @@ export async function POST(req: Request) {
         // Parse the JSON data from the request body
         const { ...requestParams } = await req.json();
 
-        console.log("params: ", requestParams);
-        // console.log("user: ", user);
-
         // Continue with your code to make the fetch request
 
         const context: ContextType = await fetcher<ContextType>("delete-object", HTTPMethod.POST, false, requestParams);
@@ -27,7 +24,6 @@ export async function POST(req: Request) {
         }
 
         // Handle the response data as needed
-        console.log(context);
 
         return new Response(JSON.stringify(context.message), { status: 200, headers: { "Content-Type": "application/json" } });
     } catch (error) {

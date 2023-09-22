@@ -4,6 +4,7 @@ import PageContent from "~/components/admin/database/PageContent";
 import ObjectList from "~/components/admin/database/ObjectList";
 import UploadComponent from "~/components/admin/database/UploadComponent";
 import { ScrollProvider } from "~/components/ScrollProvider";
+import { requireAdminAuthentication, requireAuthentication, requireContributionAuthentication } from "~/actions/auth";
 
 type AdminDatabaseProps = {};
 
@@ -45,3 +46,6 @@ const AdminDatabase: React.FC<AdminDatabaseProps> = () => {
 };
 
 export default AdminDatabase;
+
+
+export const getServerSideProps = requireContributionAuthentication;

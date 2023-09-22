@@ -29,8 +29,6 @@ export async function POST(req: Request) {
     let savedObject;
 
   try {
-    console.log("params: ", requestParams);
-    
 
     // Parse the JSON data from the request body
 
@@ -96,11 +94,6 @@ async function saveObjectToDatabase(match: string, context: ContextType, userId:
 
     const transcriptions = context.data;
     const uuids = context.uuids;
-
-    console.log("lengths");
-    console.log(transcriptions.length, uuids.length);
-    console.log(transcriptions[transcriptions.length], uuids[uuids.length]);
-    console.log(transcriptions[transcriptions.length - 1], uuids[uuids.length - 1]);
 
     if (!transcriptions || !uuids) {
       throw new Error("Transcriptions not provided");

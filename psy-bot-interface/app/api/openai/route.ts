@@ -14,18 +14,12 @@ const openai = new OpenAIApi(config);
 
 export const runtime = "edge";
 
-type Message = {
-  role: string;
-  content: string;
-};
-
 export async function POST(req: Request) {
-  const { messages, chatId } = (await req.json()) as {
-    messages: Message[];
-    chatId: string;
-  };
 
-  const latestUserMessage = messages[messages.length - 1] as Message;
+  const json = await req.json()
+  const { messages } = json
+
+  const latestUserMessage = messages[messages.length - 1];
   const userPrompt = latestUserMessage.content;
 
   const context = await fetcher<{
@@ -39,20 +33,11 @@ export async function POST(req: Request) {
     // chat_id: chatId,
   });
 
-  
-  console.log(context.data);
-  
-  // const contextText = context.data.map((item) => item.data).join(" ");
-
   const contextText = context.data.map((item) => {
     const youtubeURL = buildYouTubeURL(item.yt_id);
     const youtubeURLWithTimeframe = `${youtubeURL}&t=${getTimeInSeconds(item.timeframe)}`;
     return `${item.data} (link= "${youtubeURLWithTimeframe}") (timeframe = [${item.timeframe}])`;
   }).join(" ");
-  
-
-  console.log("context");
-  console.log(contextText);
 
   const promptWithContext = getPromptWithContext(userPrompt, contextText);
 
@@ -69,7 +54,7 @@ export async function POST(req: Request) {
 
   const stream = OpenAIStream(response);
 
-  return new StreamingTextResponse(stream);
+  return new StreamingTextResponse(stream)
 }
 
 const getPromptWithContext = (userPrompt: string, context: string) => {
@@ -114,9 +99,5 @@ function getTimeInSeconds(timeframe: string | undefined): number | undefined {
   // Calculate the time difference in seconds
   const timeInSeconds = startTime;
 
-  console.log(timeInSeconds);
-
   return timeInSeconds;
 }
-
-

@@ -3,26 +3,22 @@ import CurrentChat from "../components/Chat";
 import SelectChat from "../components/SelectChat";
 
 import { api } from "~/utils/api";
-import { useSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import SelectChatModal from "../components/SelectChat";
+import ChatLayout from "~/components/ChatLayout";
+import AuthLayout from "~/components/AuthLayout";
+import { GetServerSidePropsContext } from "next";
+import { requireAuthentication } from "~/actions/auth";
 
 const MainPage = () => {
-  
-  // const { data: sessionData } = useSession();
-  
-
   return (
-    <main className="flex h-screen bg-gradient-to-b">
-      <div className="w-1/4 bg-gray flex-shrink-0">
-        {/* Left Section: User Chats */}
-        <UserChats />
-      </div>
-      <div className="flex-1 bg-white shadow">
-        {/* Right Section: Current Chat */}
+      <ChatLayout>
         <SelectChatModal />
-      </div>
-    </main>
+      </ChatLayout>
   );
 };
 
 export default MainPage;
+
+
+export const getServerSideProps = requireAuthentication;

@@ -9,6 +9,7 @@ const AdminActions: React.FC = () => {
     { label: "Settings", route: "settings" },
     { label: "Database", route: "database" },
     { label: "Test", route: "test" },
+    { label: "Users", route: "users" },
     { label: "Account", route: "account" },
     { label: "Manage", route: "manage" },
     { label: "Billing", route: "billing" },

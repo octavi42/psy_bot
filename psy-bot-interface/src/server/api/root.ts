@@ -4,6 +4,7 @@ import { objectsRouter } from "~/server/api/routers/object";
 import { createTRPCRouter } from "~/server/api/trpc";
 import { object } from "zod";
 import { saveStateRouter } from "./routers/save_state";
+import { usersRouter } from "./routers/users";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ import { saveStateRouter } from "./routers/save_state";
  */
 export const appRouter = createTRPCRouter({
   example: exampleRouter,
+  users: usersRouter,
   chat: chatRouter,
   object: objectsRouter,
   saveState: saveStateRouter

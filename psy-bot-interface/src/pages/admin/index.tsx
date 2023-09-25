@@ -1,19 +1,20 @@
-import React from "react";
-import MenuActions from "../../components/admin/Menu"; // Import the AdminActions component
-import AdminLayout from "~/components/admin/AdminLayout";
-import { requireContributionAuthentication } from "~/actions/auth";
 
-const AdminPage = () => {
+
+import { Separator } from "@/components/ui/separator"
+import SettingsLayout from "~/components/layouts/SettingsLayout";
+
+export default function SettingsProfilePage() {
   return (
-    <AdminLayout>
-        <div>
-            <h1 className="text-2xl font-semibold mb-6">Admin Page</h1>
-        </div>
-    </AdminLayout>
-  );
-};
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">Profile</h3>
+        <p className="text-sm text-muted-foreground">
+          This is how others will see you on the site.
+        </p>
+      </div>
+      <Separator />
+    </div>
+  )
+}
 
-export default AdminPage;
-
-
-export const getServerSideProps = requireContributionAuthentication;
+SettingsProfilePage.PageLayout = SettingsLayout;

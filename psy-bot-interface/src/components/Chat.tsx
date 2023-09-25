@@ -18,8 +18,7 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
   const router = useRouter();
   const { chatId } = router.query;
   const { mutate: saveChatMessage } = api.chat.saveChatMessage.useMutation();
-
-
+  
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
       api: `/api/openai`,
@@ -81,7 +80,7 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
 
       {/* Input box */}
       <InputPanel
-        id={chatId as string}
+        id={id}
         isLoading={isLoading}
         stop={stop}
         append={append}

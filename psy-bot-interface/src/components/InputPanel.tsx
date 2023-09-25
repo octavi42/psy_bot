@@ -3,6 +3,7 @@ import React from "react";
 import { Loader2 } from "lucide-react";
 import { api } from "~/utils/api";
 import { ChatRole } from "@prisma/client";
+import { Message } from "ai";
 
 export interface InputPanelProps
     extends Pick<
@@ -15,6 +16,7 @@ export interface InputPanelProps
         | 'input'
         | 'setInput'
         | 'chatId'
+        | 'setMessages'
     > {
     id?: string
 }
@@ -29,7 +31,8 @@ export function InputPanel({
     input,
     setInput,
     messages,
-    chatId
+    chatId,
+    setMessages
 }: InputPanelProps) {
 
     const { mutate: saveChatMessage } = api.chat.saveChatMessage.useMutation();
@@ -49,7 +52,30 @@ export function InputPanel({
           return;
         }
 
-        saveChatMessage(
+        if (!chatId) {
+          const message = {
+            content: input,
+            role: 'user',
+          } as Message;
+
+          const existingArray = JSON.parse(localStorage.getItem("messages") || "[]");
+          existingArray.push(message);
+          localStorage.setItem("messages", JSON.stringify(existingArray));
+
+          console.log("11111");
+
+          // console.log(message);
+          
+          
+
+          setMessages([...messages, message]);
+
+          await append({
+            content: input,
+            role: 'user',
+          });
+        } else {
+          saveChatMessage(
             {
               chatId: chatId as string,
               role: "user",
@@ -61,12 +87,13 @@ export function InputPanel({
               },
             }
           );
-    
-        await append({
-          id,
-          content: input,
-          role: 'user',
-        });
+
+          await append({
+            id,
+            content: input,
+            role: 'user',
+          });
+        }
       };
 
   return (

@@ -39,4 +39,4 @@ const MainPage = () => {
 
 export default MainPage;
 
-export const getServerSideProps = requireAuthentication
+export const getServerSideProps = requireAuthentication;

@@ -4,6 +4,11 @@ import cuid from "cuid";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 import { SaveState } from "@prisma/client";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+
+import { ReloadIcon } from "@radix-ui/react-icons"
 
 type UploadContentProps = {
   endpoint: string;
@@ -127,27 +132,67 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
 
 
   return (
-    <div className="w-1/4">
-      <div className="Group1 h-full w-full relative">
-        <div className="relative Rectangle w-full h-full left-0 top-0 bg-orange-50 rounded-[31px]" />
+    <div className="grid relative max-h-full w-1/4 place-items-center">
+      <div className="grid h-4/5 w-full rounded-3xl content-around place-items-center">
+        {/* <div className="w-full h-full left-0 top-0 bg-orange-50 rounded-[31px]" /> */}
 
-        <input
+        {/* <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="Rectangle14 p-5 h-10 top-10 absolute bg-orange-50 rounded-[30px] border border-slate-400 left-0 right-0 mx-5"
+        /> */}
+
+        <Input 
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="rounded-xl border border-slate-400 hover:bg-slate-100 transition-colors"
         />
 
-        <textarea
+
+        <Textarea 
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="Rectangle15 p-5 h-2/3 absolute bg-orange-50 rounded-[30px] border border-slate-400 left-0 right-0 mx-4 top-1/2 transform -translate-y-1/2"
+          className="h-96 rounded-xl border border-slate-400 resize-none hover:bg-slate-100 transition-colors"
+          />
+
+
+        {/* <Button disabled={true} className="hover:bg-gray-300 rounded-xl w-1/2 grid place-items-center">
+          {true ? (
+            <div className="flex">
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              Uploading
+            </div>
+          ) : (
+            <>Upload</>
+          )}
+        </Button> */}
+
+
+        {isLoading ? (
+          <Button disabled={isUploadDisabled} className="">
+            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            Uploading
+          </Button>
+        ) : (
+          <Button onClick={handleUpload} variant="ghost" className="hover:bg-gray-300 rounded-xl w-10/12 grid place-items-center">
+            Upload
+          </Button>
+        )}
+
+        {/* <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="p-5 h-2/3 bg-orange-50 rounded-[30px] border border-slate-400 left-0 right-0 mx-4 top-1/2 transform -translate-y-1/2"
         />
 
         <button
-          className="Rectangle16 h-16 bottom-10 absolute bg-blue-950 rounded-[30px] left-0 right-0 mx-5 text-white"
+          className="h-16 bottom-10 bg-blue-950 rounded-[30px] left-0 right-0 mx-5 text-white"
           onClick={handleUpload}
           disabled={isUploadDisabled} // Set the disabled attribute based on the condition
         >
@@ -159,7 +204,7 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
         ) : (
           "Upload"
         )}
-      </button>
+      </button> */}
       </div>
     </div>
   );

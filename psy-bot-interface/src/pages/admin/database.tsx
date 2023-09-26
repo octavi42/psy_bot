@@ -23,7 +23,7 @@ export default function AdminDatabase() {
   return (
       <ScrollProvider>
         <div
-          className="p-8 relative min-h-screen h-full flex w-full pb-40"
+          className="p-8 relative min-h-screen flex w-full"
           style={{ scrollSnapAlign: "start" }}
         >
           <PageContent

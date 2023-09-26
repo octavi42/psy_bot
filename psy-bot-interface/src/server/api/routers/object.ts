@@ -1,3 +1,4 @@
+import { error } from "console";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
@@ -15,43 +16,20 @@ export const objectsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { filter, user } = input || { filter: "", user: "" };
 
-      console.log("filter: " + filter);
-      console.log("user: " + user);
+      if (!filter) return error("No filter provided");
 
-      if (filter == "All") {
-        const result = ctx.prisma.objects.findMany();
-        console.log("result: " + result);
-        
+      let userByNames: any[] = [];
+      let result = [];
 
-        return result;
-      }
+      if (user) { userByNames = await findUserByName(user, ctx) }
 
-      if (filter && user) {
-        // Filter by both filter and user
-        return await ctx.prisma.objects.findMany({
-          where: {
-            type: filter,
-            createdByUserId: user,
-          },
-        });
-      } else if (filter) {
-        // Filter by category only
-        return await ctx.prisma.objects.findMany({
-          where: {
-            type: filter,
-          },
-        });
-      } else if (user) {
-        // Filter by user only
-        return await ctx.prisma.objects.findMany({
-          where: {
-            type: user,
-          },
-        });
-      }
+      if (!userByNames) { result = await filterResultByUser(filter, userByNames, ctx) }
+      else { result = await filterResult(filter, ctx)}
+      
+      
+      
+      return result
 
-      // No filter or user provided, return all data
-      return await ctx.prisma.objects.findMany();
     }),
 
 
@@ -153,3 +131,54 @@ export const objectsRouter = createTRPCRouter({
       });
     }),
 });
+
+
+async function filterResultByUser(type: string, userByNames?: any, ctx?: any) {
+  let result: string | any[] | PromiseLike<any[]> = [];
+
+  for (const userByName of userByNames) {
+    const where: any = {
+      createdByUserId: userByName.id,
+    };
+
+    if (type !== "All") {
+      where["type"] = type as any;
+    }
+
+    const objects = await ctx.prisma.objects.findMany({
+      where: where,
+    });
+
+    for (const object of objects) result.push(object);
+  }
+
+  return result;
+}
+
+
+async function filterResult(type: string, ctx?: any){
+  const where: any = {};
+
+  if (type !== "All") {
+    where["type"] = type as any;
+  }
+
+  const result = await ctx.prisma.objects.findMany({
+    where: where,
+  });
+
+  return result
+}
+
+
+async function findUserByName(name: string, ctx: any) {
+  const userByNames = await ctx.prisma.user.findMany({
+    where: {
+      name: {
+        contains: name.toLowerCase(),
+      },
+    },
+  });
+
+  return userByNames;
+}

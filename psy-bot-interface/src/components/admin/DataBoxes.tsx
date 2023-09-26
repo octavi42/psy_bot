@@ -41,10 +41,11 @@ interface DataBoxProps {
     inputContent,
   }: DataBoxProps) => {
     return (
-      <DataBox title="Youtube URL:" enabled={inputContent[0]} id="youtube">
+      <DataBox title="Youtube" enabled={inputContent[0]} id="youtube">
         <input
             id="url"
             type="text"
+            placeholder="Youtube url"
             onChange={handleInputChange}
             onInput={handleInputChange}
         />
@@ -81,12 +82,9 @@ interface DataBoxProps {
         enabled={inputContent[2]}
         id="qa"
     >
-      <p>Category</p>
-      <input id="category" type="text" onInput={handleInputChange} />
-      <p>Question</p>
-      <input id="question" type="text" onInput={handleInputChange} />
-      <p>Answer</p>
-      <input id="answer" type="text" onInput={handleInputChange} />
+      <input id="category" type="text" placeholder="Category" onInput={handleInputChange} />
+      <input id="question" type="text" placeholder="Question" onInput={handleInputChange} />
+      <input id="answer" type="text" placeholder="Answer" onInput={handleInputChange} />
     </DataBox>
   );
 
@@ -99,10 +97,8 @@ interface DataBoxProps {
         enabled={inputContent[3]}
         id="data"
     >
-        <p>Category</p>
-        <input id="category" type="text" onInput={handleInputChange} />
-        <p>Description</p>
-        <input id="data" type="text" onInput={handleInputChange} />
+        <input id="category" type="text" placeholder="Category" onInput={handleInputChange} />
+        <input id="data" type="text" placeholder="Description" onInput={handleInputChange} />
     </DataBox>
   );
 

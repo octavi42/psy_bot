@@ -4,11 +4,27 @@ import axios from "axios";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+
+
+
+
 const ObjectList = () => {
   const { data: sessionData } = useSession();
 
-  const [filter, setFilter] = useState("all");
-  const [user, setUser] = useState("none");
+  const [filter, setFilter] = useState("All");
+  const [user, setUser] = useState("");
 
   // create a ref to the input element
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -93,7 +109,7 @@ const ObjectList = () => {
   };
 
   return (
-    <div className="p-8" style={{ scrollSnapAlign: "start" }}>
+    <div className="p-8 min-h-screen" style={{ scrollSnapAlign: "start" }}>
       {/* Top Navigation Bar */}
       <div className="bg-white m-4">
         <div className="flex justify-between items-center space-x-4 mx-4">
@@ -187,12 +203,32 @@ const ObjectList = () => {
                   )}
                 </div>
                 {/* Delete button */}
-                <button
+                {/* <button
                   className="ml-auto p-2 text-red-600 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                   onClick={() => handleDeleteItem(data.id, data.type)} // Call your delete function here
                 >
                   Delete
-                </button>
+                </button> */}
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline">Show Dialog</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your
+                        account and remove your data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
               </div>
             </li>
           ))}

@@ -5,6 +5,7 @@ import { useScrollContext } from "~/components/ScrollProvider";
 
 import { api } from "~/utils/api";
 import { SaveState } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 
 interface PageContentProps {
   setEndpoint: React.Dispatch<React.SetStateAction<string>>;
@@ -125,9 +126,8 @@ const PageContent: React.FC<PageContentProps> = ({
   const { scrollToBottom } = useScrollContext();
 
   return (
-    <div className="w-4/5 mr-8">
-      <h2 className="text-2xl font-semibold mb-6">Admin Database</h2>
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+    <div className="w-4/5 mr-8 min-h-full">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 items-center">
         {/* Conditionally render based on isSaving */}
         {(processState?.state === SaveState.saving) ? (
           <div>
@@ -154,12 +154,19 @@ const PageContent: React.FC<PageContentProps> = ({
           })
         )}
 
-        <button
-          className="absolute bottom-4 left-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+        <Button 
+          className="absolute bottom-4 left-4 text-cyan-700 py-2 px-4 border border-cyan-700 transition duration-300 hover:bg-cyan-700 hover:text-white rounded-xl"
+          onClick={scrollToBottom}
+          >
+          Scroll to Bottom
+        </Button>
+
+        {/* <button
+          
           onClick={scrollToBottom}
         >
           Scroll to Bottom
-        </button>
+        </button> */}
       </div>
     </div>
   );

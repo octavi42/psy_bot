@@ -30,7 +30,7 @@
       {
         "name": "next"
       }
-    ]
+    ],
   },
   "include": [
     ".eslintrc.cjs",

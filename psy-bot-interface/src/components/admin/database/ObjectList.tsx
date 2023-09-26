@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { AlertDialogComponent } from "~/components/Alert";
 
 
 
@@ -210,24 +211,7 @@ const ObjectList = () => {
                   Delete
                 </button> */}
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline">Show Dialog</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your
-                        account and remove your data from our servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction>Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <AlertDialogComponent buttonText="Delete" title="Ești sigur că vrei să ștergi conținutul?" description="Această acțiune nu poate fi anulată. Aceasta va șterge permanent datele din baza de date." buttonContinue="Delete"/>
 
               </div>
             </li>

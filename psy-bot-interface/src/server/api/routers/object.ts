@@ -14,21 +14,23 @@ export const objectsRouter = createTRPCRouter({
         .nullish(),
     )
     .query(async ({ ctx, input }) => {
-      const { filter, user } = input || { filter: "", user: "" };
+      // const { filter, user } = input || { filter: "", user: "" };
 
-      if (!filter) return error("No filter provided");
+      // if (!filter) return error("No filter provided");
 
-      let userByNames: any[] = [];
-      let result = [];
+      // let userByNames: any[] = [];
+      // let result = [];
 
-      if (user) { userByNames = await findUserByName(user, ctx) }
+      // if (user) { userByNames = await findUserByName(user, ctx) }
 
-      if (!userByNames) { result = await filterResultByUser(filter, userByNames, ctx) }
-      else { result = await filterResult(filter, ctx)}
+      // if (!userByNames) { result = await filterResultByUser(filter, userByNames, ctx) }
+      // else { result = await filterResult(filter, ctx)}
       
       
       
-      return result
+      // return result
+
+      return ctx.prisma.objects.findMany();
 
     }),
 

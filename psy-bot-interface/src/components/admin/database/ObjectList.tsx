@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { AlertDialogComponent } from "~/components/Alert";
+import DemoPage from "./ObjectListTable/page";
 
 
 
@@ -176,46 +177,7 @@ const ObjectList = () => {
       <div className="p-4 relative h-auto">
         <h2 className="text-xl font-semibold mb-4 pt-8">Uploaded Data</h2>
         <ul className="space-y-4">
-          {objectData?.map((data) => (
-            <li
-              key={data.id}
-              className="bg-white p-4 rounded-lg shadow-md hover:bg-blue-100 transition-colors relative group"
-            >
-              {/* Item content */}
-              <div className="flex items-center">
-                <div>
-                  <h3 className="text-lg font-semibold">{data.title}</h3>
-                  {/* Add CSS for expandable description */}
-                  <p
-                    className={`text-gray-600 ${
-                      expandedDescriptions[data.id] ? "max-h-full overflow-y-auto" : "max-h-16 overflow-hidden"
-                    }`}
-                  >
-                    {data.description}
-                  </p>
-                  {/* Toggle button for description expansion */}
-                  { data.description && data.description.length > 100 && (
-                    <button
-                      className="text-blue-500 hover:underline"
-                      onClick={() => toggleDescriptionExpansion(data.id)}
-                    >
-                      {expandedDescriptions[data.id] ? "Read Less" : "Read More"}
-                    </button>
-                  )}
-                </div>
-                {/* Delete button */}
-                {/* <button
-                  className="ml-auto p-2 text-red-600 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  onClick={() => handleDeleteItem(data.id, data.type)} // Call your delete function here
-                >
-                  Delete
-                </button> */}
-
-                <AlertDialogComponent buttonText="Delete" title="Ești sigur că vrei să ștergi conținutul?" description="Această acțiune nu poate fi anulată. Aceasta va șterge permanent datele din baza de date." buttonContinue="Delete"/>
-
-              </div>
-            </li>
-          ))}
+          <DemoPage />
         </ul>
       </div>
     </div>

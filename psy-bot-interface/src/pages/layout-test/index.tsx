@@ -1,32 +1,38 @@
-import { AlertDialog } from "@radix-ui/react-alert-dialog";
-import { ReactElement } from "react";
-import GlobalRootLayout from "../../components/layouts/GlobalLayout";
-import { AlertDialogDemo } from "~/components/Alert";
-// import { AlertDialogDemo } from "~/components/Alert";
-// import GlobalRootLayout from "~/components/layouts/GlobalLayout";
+import React, { useState, useEffect } from "react";
+import { Payment, columns } from "./columns"
+import { DataTable } from "./data-table"
+import { api } from "~/utils/api";
 
- 
-const TestLayoutPage = () => {
-  return (
-    <>
-      <p>hello world</p>
-      <AlertDialogDemo />
-    </>
-  )
+async function getData(): Promise<Payment[]> {
+  // Fetch data from your API here.
+  return [
+    {
+      id: "728ed52f",
+      amount: 100,
+      status: "pending",
+      email: "m@example.com",
+    },
+    // ...
+  ]
 }
 
+export default function DemoPage() {
 
-TestLayoutPage.PageLayout = GlobalRootLayout;
+  const { data: users, refetch: refetchUsers, isFetching: loading } = api.users.getAll.useQuery();
 
 
-TestLayoutPage.getLayout = function getLayout(page: ReactElement, layout: ReactElement) {
+
   return (
-    <div>
-      <GlobalRootLayout>
-        {page}
-      </GlobalRootLayout>
+    <div className="container mx-auto py-10">
+      {/* render datatable if user exists */}
+      {loading ? (
+        <div>Loading...</div>
+        ) : (
+          <>
+            <DataTable columns={columns} data={users} />
+            <p>{users[0].name}</p>
+          </>
+      )}
     </div>
-  )
+  );
 }
-
-export default TestLayoutPage;

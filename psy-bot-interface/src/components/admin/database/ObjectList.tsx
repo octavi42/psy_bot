@@ -111,9 +111,9 @@ const ObjectList = () => {
   };
 
   return (
-    <div className="p-8 min-h-screen" style={{ scrollSnapAlign: "start" }}>
+    <div className="px-8 relative flex flex-col h-screen" style={{ scrollSnapAlign: "start" }}>
       {/* Top Navigation Bar */}
-      <div className="bg-white m-4">
+      {/* <div className="bg-white m-4">
         <div className="flex justify-between items-center space-x-4 mx-4">
           <div className="flex space-x-4">
             <button
@@ -152,10 +152,10 @@ const ObjectList = () => {
             >
               Data
             </button>
-          </div>
+          </div> */}
 
           {/* User Input */}
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               type="text"
               placeholder="User"
@@ -171,16 +171,14 @@ const ObjectList = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Uploaded Data */}
-      <div className="p-4 relative h-auto">
-        <h2 className="text-xl font-semibold mb-4 pt-8">Uploaded Data</h2>
-        <ul className="space-y-4">
-          <DemoPage />
-        </ul>
+      {/* <div className="p-4 relative h-full"> */}
+        <h2 className="text-xl font-semibold mb-4 pt-8 grow-0">Uploaded Data</h2>
+        <DemoPage />
       </div>
-    </div>
+    // </div>
   );
 };
 

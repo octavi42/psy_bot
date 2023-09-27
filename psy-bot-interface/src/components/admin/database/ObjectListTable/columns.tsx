@@ -30,15 +30,54 @@ export const columns: ColumnDef<Payment>[] = [
     },
   },
   {
+    accessorKey: "createdByUserId",
+    header: () => <div>Creator mail</div>,
+    cell: ({ row }) => {
+      const userId = row.getValue("createdByUserId")
+      const { data: user, refetch: refetchUser, isFetching: loading } = api.users.getById.useQuery({ id: userId as string });      
+ 
+      return (<>
+        {user?.email}
+      </>)
+    },
+  },
+  {
     accessorKey: "title",
     header: "Title",
   },
   {
     accessorKey: "description",
-    header: "Email",
+    header: "Description",
+    cell: ({ row }) => {
+        const description = row.getValue("description") as string
+        const truncatedDescription = description ? description.slice(0, 50) + (description.length > 50 ? "..." : "") : "";
+        
+        return (
+          <div title={description}>
+            {truncatedDescription}
+          </div>
+        );
+      },
   },
   {
-    accessorKey: "role",
-    header: "Role",
+    accessorKey: "type",
+    header: "Category",
+    cell: ({ row }) => {
+      const type = row.getValue("type");
+
+      console.log(row);
+      
+      
+      if (type === "Youtube") {
+        const ytid = row.getValue("youtube_id");
+        console.log("ytid", ytid);
+        console.log("type", type);
+        
+        
+        return <>{ytid}</>;
+      } else {
+        return "-";
+      }
+    },
   }
 ]

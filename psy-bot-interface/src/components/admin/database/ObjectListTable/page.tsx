@@ -23,7 +23,7 @@ export default function DemoPage() {
   const { data, isFetching, refetch: refetchObject } = api.object.getAll.useQuery();
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="p-0 w-auto grow">
       {/* render datatable if user exists */}
       {isFetching ? (
         <div>Loading...</div>

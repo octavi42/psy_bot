@@ -22,6 +22,9 @@ export default function DemoPage() {
 
   const { data, isFetching, refetch: refetchObject } = api.object.getAll.useQuery();
 
+    console.log(data);
+    
+
   return (
     <div className="p-0 w-auto grow">
       {/* render datatable if user exists */}

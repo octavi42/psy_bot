@@ -1,3 +1,4 @@
+import React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,35 +9,40 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/alert-dialog";
 
 interface AlertDialogDemoProps {
-  buttonText: string
+  actionButton: React.ReactNode; // Custom action button
   title: string;
   description: string;
   buttonCancel?: string;
   buttonContinue: string;
 }
 
-export function AlertDialogComponent ({ buttonText, title, description, buttonCancel="Cancel", buttonContinue }: AlertDialogDemoProps) {
+export function AlertDialogComponent({
+  actionButton,
+  title,
+  description,
+  buttonCancel = "Cancel",
+  buttonContinue,
+}: AlertDialogDemoProps) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline">{buttonText}</Button>
-      </AlertDialogTrigger>
+      <AlertDialogTrigger asChild>{actionButton}</AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="border-red-500 bg-red-500 text-slate-50 hover:text-red-500">{buttonCancel}</AlertDialogCancel>
-          <AlertDialogAction className="text-slate-600 hover:text-slate-950">{buttonContinue}</AlertDialogAction>
+          <AlertDialogCancel className="border-red-500 bg-red-500 text-slate-50 hover:text-red-500">
+            {buttonCancel}
+          </AlertDialogCancel>
+          <AlertDialogAction className="text-slate-600 hover:text-slate-950">
+            {buttonContinue}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-  </AlertDialog>
-  )
+    </AlertDialog>
+  );
 }

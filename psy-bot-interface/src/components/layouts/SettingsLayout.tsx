@@ -24,8 +24,12 @@ const sidebarNavItems = [
     href: "/admin/bot",
   },
   {
-    title: "Users",
-    href: "/admin/users",
+    title: "Conversations",
+    href: "/admin/conversations",
+  },
+  {
+    title: "Users & Conversations",
+    href: "/admin/users-and-conversations",
   },
 ];
 

@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { AlertDialogComponent } from "~/components/Alert";
 import DemoPage from "./ObjectListTable/page";
+import UploadComponenrts from "./ObjectListTable/page";
+import UploadComponents from "./ObjectListTable/page";
 
 
 
@@ -176,7 +178,7 @@ const ObjectList = () => {
       {/* Uploaded Data */}
       {/* <div className="p-4 relative h-full"> */}
         <h2 className="text-xl font-semibold mb-4 pt-8 grow-0">Uploaded Data</h2>
-        <DemoPage />
+        <UploadComponents />
       </div>
     // </div>
   );

@@ -1,10 +1,10 @@
-import CurrentChat from "../../../components/Chat";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
-import ChatLayout from "~/components/ChatLayout";
-import { requireAuthentication } from "~/actions/auth";
+import { requireAdminAuthentication, requireAuthentication } from "~/actions/auth";
+import SettingsLayout from "~/components/layouts/SettingsLayout";
+import PreviewCurrentChat from "~/components/admin/PreviewChat";
 
-const MainPage = () => {
+const PrewievChat = () => {
   const router = useRouter();
   const { chatId } = router.query;
 
@@ -28,12 +28,14 @@ const MainPage = () => {
   }));
 
   return (
-    <ChatLayout>
-      <CurrentChat initialMessages={messagesWithContent}/>
-    </ChatLayout>
+      <div>
+        <PreviewCurrentChat initialMessages={messagesWithContent}/>
+      </div>
   );
 };
 
-export default MainPage;
+export default PrewievChat;
 
-export const getServerSideProps = requireAuthentication;
+PrewievChat.PageLayout = SettingsLayout
+
+export const getServerSideProps = requireAdminAuthentication;

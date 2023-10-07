@@ -1,39 +1,52 @@
 import React, { useState, useEffect } from "react";
-import { Payment, columns } from "./columns"
+import { userColumns, chatColumns } from "./columns"
 import { DataTable } from "./data-table"
 import { api } from "~/utils/api";
 
-async function getData(): Promise<Payment[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "728ed52f",
-      amount: 100,
-      status: "pending",
-      email: "m@example.com",
-    },
-    // ...
-  ]
+// async function getData(): Promise<Payment[]> {
+//   // Fetch data from your API here.
+//   return [
+//     {
+//       id: "728ed52f",
+//       amount: 100,
+//       status: "pending",
+//       email: "m@example.com",
+//     },
+//     // ...
+//   ]
+// }
+
+type ConversationsTableProps = {
+  data: string;
 }
 
-export default function UploadComponents() {
+
+export default function ConversationsTable(props: ConversationsTableProps) {
 
 //   const { data: users, refetch: refetchUsers, isFetching: loading } = api.users.getAll.useQuery();
 
-  const { data, isFetching, refetch: refetchObject } = api.object.getAll.useQuery();
+  const { data: chats, isFetching: isFetchingChats } = api.chat.getAll.useQuery();
 
-    console.log(data);
+  const { data: users, isFetching: isFetchingUsets } = api.users.getAll.useQuery();
+
+  const [isDataFetching, setIsDataFetching] = useState(false)
+
+  useEffect(() => {
+    setIsDataFetching(isFetchingChats || isFetchingUsets)
+
+    console.log(isDataFetching);
+  }, [isFetchingChats, isFetchingUsets])
+
     
 
   return (
-    <div className="p-0 w-auto grow">
+    <div>
       {/* render datatable if user exists */}
-      {isFetching ? (
+      {isDataFetching ? (
         <div>Loading...</div>
         ) : (
           <>
-            <DataTable columns={columns} data={data} />
-            {/* <p>{data}</p> */}
+            <DataTable columns={props.data === "chats" ? chatColumns: userColumns} data={props.data === "chats" ? chats : users} />
           </>
       )}
     </div>

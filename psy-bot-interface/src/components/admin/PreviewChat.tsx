@@ -1,12 +1,12 @@
 import React from "react";
-import AutoScrollContainer from "./AutoScrollContainer";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { Chat, ChatRole } from "@prisma/client";
 import { useChat, type Message } from "ai/react"
-import ChatMessage from "./ChatMessage";
 
-import { InputPanel } from "./InputPanel";
+import AutoScrollContainer from "../AutoScrollContainer";
+import ChatMessage from "../ChatMessage";
+import { Button } from "@/components/ui/button";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -14,14 +14,14 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 
-function CurrentChat({ id, initialMessages, className }: ChatProps) {
+function PreviewCurrentChat({ id, initialMessages, className }: ChatProps) {
   const router = useRouter();
   const { chatId } = router.query;
   const { mutate: saveChatMessage } = api.chat.saveChatMessage.useMutation();
   
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
-      api: `src/app/api/openai`,
+      api: `/api/openai`,
       initialMessages,
       id,
       body: {
@@ -58,11 +58,20 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
   const { data: chatsData } = api.chat.getChats.useQuery();
 
   const selectedChat = chatsData?.find((chat) => chat.id === chatId) as Chat;
+
+  const handleBackButtonClick = () => {
+    router.back(); // Redirects to the previous page
+  };
   
   return (
     <div className="flex h-screen max-h-screen w-full flex-col justify-between bg-gray-100">
       {/* Chat component label */}
       <div className="flex flex-row border-b p-4 bg-white">
+      <Button
+        onClick={handleBackButtonClick}
+      >
+        Back
+      </Button>
         <span className="font-semibold text-gray-800">Selected chat:</span>
         <span className="ml-2 font-bold text-blue-600">
           {selectedChat && selectedChat.name}
@@ -78,21 +87,8 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
         ))}
       </AutoScrollContainer>
 
-      {/* Input box */}
-      <InputPanel
-        id={id}
-        isLoading={isLoading}
-        stop={stop}
-        append={append}
-        reload={reload}
-        messages={messages}
-        input={input}
-        setInput={setInput}
-        chatId={chatId as string}
-      />
-      
     </div>
   );
 };
 
-export default CurrentChat;
+export default PreviewCurrentChat;

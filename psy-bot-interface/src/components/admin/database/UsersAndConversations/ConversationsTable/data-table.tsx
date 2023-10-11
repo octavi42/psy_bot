@@ -38,8 +38,8 @@ export function DataTable<TData, TValue>({
     
   })
 
-  const ref1 = useRef(null)
-  const ref2 = useRef(null)
+  // const ref1 = useRef(null)
+  // const ref2 = useRef(null)
 
   useEffect(() => {
     
@@ -56,7 +56,7 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {/* <DataTableToolbar table={table} /> */}
       <div className="relative rounded-md">
-        <div className="absolute h-full" ref={ref2}></div>
+        <div className="absolute h-full" ></div>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -77,14 +77,14 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+          {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell ref={ref1} key={cell.id}>
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -93,7 +93,7 @@ export function DataTable<TData, TValue>({
                   ))}
                 </TableRow>
               ))
-              ) : (
+            ) : (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

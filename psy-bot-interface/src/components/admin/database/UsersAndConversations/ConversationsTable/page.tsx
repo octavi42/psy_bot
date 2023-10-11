@@ -26,27 +26,17 @@ export default function ConversationsTable(props: ConversationsTableProps) {
 //   const { data: users, refetch: refetchUsers, isFetching: loading } = api.users.getAll.useQuery();
 
   const { data: chats, isFetching: isFetchingChats } = api.chat.getAll.useQuery();
-
   const { data: users, isFetching: isFetchingUsets } = api.users.getAll.useQuery();
-
-  const [isDataFetching, setIsDataFetching] = useState(false)
-
-  useEffect(() => {
-    setIsDataFetching(isFetchingChats || isFetchingUsets)
-
-    console.log(isDataFetching);
-  }, [isFetchingChats, isFetchingUsets])
-
-    
 
   return (
     <div>
       {/* render datatable if user exists */}
-      {isDataFetching ? (
+      {isFetchingChats || isFetchingUsets ? (
         <div>Loading...</div>
         ) : (
           <>
             <DataTable columns={props.data === "chats" ? chatColumns: userColumns} data={props.data === "chats" ? chats : users} />
+
           </>
       )}
     </div>

@@ -5,6 +5,7 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
+import { Toaster } from "@/components/ui/toaster";
 
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -33,6 +34,7 @@ function MyApp({
       {Component.PageLayout ? (
         <Component.PageLayout>
             <SessionProvider session={session}>
+                <Toaster />
                 <Component {...pageProps} />
             </SessionProvider>
           </Component.PageLayout>

@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster";
 import { Metadata } from "next";
 import { SidebarNav } from "~/components/admin/sidebar-nav";
 

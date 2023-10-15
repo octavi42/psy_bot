@@ -1,8 +1,16 @@
+"use client"
+
 import { Separator } from "@/components/ui/separator";
-import React, { useState } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import React, { useEffect, useState } from "react";
 import { requireAdminAuthentication, requireAuthentication, requireContributionAuthentication } from "~/actions/auth";
 import {InputBox, SliderBox, DropDownBox} from "~/components/admin/bot/InputBoxes";
 import SettingsLayout from "~/components/layouts/SettingsLayout";
+
+import { Button } from "@/components/ui/button"
+
+import { ToastAction } from "@/components/ui/toast"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function AdminBot() {
     const [apiKey, setApiKey] = useState(""); // State variable to store the API key
@@ -15,10 +23,30 @@ export default function AdminBot() {
     const separatorStyle = "w-[80%] m-10 mx-auto";
     const inputStyle = "m-auto mx-10 mt-10 mb-3";
 
+    const { toast } = useToast()
+
+    // useEffect(() => {
+
+    //     toast({
+    //         variant: "destructive",
+    //         title: "Uh oh! Something went wrong.",
+    //         description: "There was a problem with your request.",
+    //         action: <ToastAction altText="Try again">Try again</ToastAction>,
+    //       })
+
+    // })
+
     return (
 
 
         <div>
+
+            <Button onClick={ () => {
+                    toast({
+                        title: "Uh oh! Something went wrong.",
+                        description: "There was a problem with your request.",
+                      })
+            }}> asjdh </Button>
 
             <InputBox
                 className={inputStyle}

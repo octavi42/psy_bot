@@ -4,6 +4,8 @@ import { Loader2 } from "lucide-react";
 import { api } from "~/utils/api";
 import { ChatRole } from "@prisma/client";
 import { Message } from "ai";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export interface InputPanelProps
     extends Pick<
@@ -62,8 +64,6 @@ export function InputPanel({
           existingArray.push(message);
           localStorage.setItem("messages", JSON.stringify(existingArray));
 
-          console.log("11111");
-
           // console.log(message);
           
           
@@ -97,27 +97,57 @@ export function InputPanel({
       };
 
   return (
-    <div>
-    <div className="h-[55px] bg-accent px-2 m-2">
+    <div className="h-[55px] bg-accent px-2 m-2 bg-white">
       <form
         className="w-full h-full flex items-center"
         onSubmit={handleSubmit}
       >
-        <input
-          className="h-full w-full bg-white border rounded-md p-2"
-          placeholder="Say something..."
-          value={input}
-          onChange={(e) => {
-            setInput(e.target.value)
-          }}
-        />
-        <button
+        {/* add a cinditional rendering to the input box depending if the last message from the db is from the bot */}
+
+        {/* { messages[messages.length - 1]?.role === "user" ? (
+          <Input
+            className="h-full w-full"
+            placeholder="Say something..."
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value)
+            }}
+          />
+        ) : (
+          <Button variant={"link"} onClick={async () => {
+            await append({
+              id,
+              content: messages[messages.length - 1]?.content as string,
+              role: 'user',
+            });
+            reload
+          }} className="w-full">reload</Button>
+        )} */}
+
+
+          <Input
+            className="h-full w-full"
+            placeholder="Say something..."
+            value={input}
+            onChange={(e) => {
+              setInput(e.target.value)
+            }}
+          />
+
+        {/* <Button
           type="submit"
-          className={`btn h-full p-2 rounded-lg ${
-            isLoading ? "bg-red-500 hover:bg-red-700" : "bg-blue-500 hover:bg-blue-700"
-          } text-white ml-2`}
-        //   disabled={isLoading}
+          variant="outline"
+          className={`className="relative inline-flex items-center justify-center inline-block p-4 px-5 py-3 overflow-hidden font-medium text-indigo-600 rounded-lg shadow-2xl group" ${
+            isLoading ? "bg-red-500 hover:bg-red-700 text-white" : 
+            "text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300  dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 focus:animate-pulse"
+          } ml-2 hover:text-white`}
+
+          
+          
+          // disabled={isLoading}
         >
+          
+
           {isLoading ? (
             <div className="flex items-center">
               <Loader2 className="animate-spin mr-2 text-white" size={16} />
@@ -126,9 +156,38 @@ export function InputPanel({
           ) : (
             'Submit'
           )}
-        </button>
+        </Button> */}
+
+
+        <Button 
+          className={`h-full m-2" ${
+            isLoading ? "relative inline-flex items-center justify-center  p-4 px-5 py-3 overflow-hidden font-medium text-indigo-600 rounded-lg shadow-2xl group" : 
+            "relative inline-flex items-center justify-center  p-4 px-5 py-3 overflow-hidden font-medium text-indigo-600 rounded-lg shadow-2xl group"
+          } ml-2 hover:text-white`}>
+        
+        {isLoading ? (
+            <div className="flex items-center">
+              <Loader2 className="z-10 animate-spin mr-2 text-white" size={16} />
+              <span className="absolute top-0 left-0 w-40 h-40 -mt-10 -ml-3 transition-all duration-700 bg-red-500 rounded-full blur-md ease"></span>
+              <span className="absolute inset-0 w-full h-full transition duration-700 group-hover:rotate-180 ease">
+              <span className="absolute bottom-0 left-0 w-24 h-24 -ml-10 bg-red-600 rounded-full blur-md"></span>
+              <span className="absolute bottom-0 right-0 w-24 h-24 -mr-10 bg-red-800 rounded-full blur-md"></span>
+              </span>
+              <span className="relative text-white">Stop</span>
+            </div>
+          ) : (
+            <>
+              <span className="absolute top-0 left-0 w-40 h-40 -mt-10 -ml-3 transition-all duration-700 bg-blue-500 rounded-full blur-md ease"></span>
+              <span className="absolute inset-0 w-full h-full transition duration-700 group-hover:rotate-180 ease">
+              <span className="absolute bottom-0 left-0 w-24 h-24 -ml-10 bg-blue-600 rounded-full blur-md"></span>
+              <span className="absolute bottom-0 right-0 w-24 h-24 -mr-10 bg-blue-800 rounded-full blur-md"></span>
+              </span>
+              <span className="relative text-white">Send</span>
+            </>
+          )}
+
+          </Button>
       </form>
-    </div>
     </div>
   );
 }

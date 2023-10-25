@@ -1,7 +1,6 @@
 "use client"
 
 import { Separator } from "@/components/ui/separator";
-import { Toaster } from "@/components/ui/toaster";
 import React, { useEffect, useState } from "react";
 import { requireAdminAuthentication, requireAuthentication, requireContributionAuthentication } from "~/actions/auth";
 import {InputBox, SliderBox, DropDownBox} from "~/components/admin/bot/InputBoxes";

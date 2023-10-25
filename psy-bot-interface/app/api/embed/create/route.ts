@@ -29,6 +29,9 @@ export async function POST(req: Request) {
     let savedObject;
 
   try {
+    console.log(endpoint);
+    console.log(requestParams);
+    
 
     // Parse the JSON data from the request body
 
@@ -36,6 +39,9 @@ export async function POST(req: Request) {
 
     // Continue with your code to make the fetch request
     const context: ContextType = await fetcher<ContextType>(endpoint, HTTPMethod.POST, false, requestParams);
+
+
+    
 
     if (!context) {
         await updateProcessStateInDatabase(userId, "saved", "Failed to fetch data from external service");

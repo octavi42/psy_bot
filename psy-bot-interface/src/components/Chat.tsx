@@ -18,10 +18,11 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
   const router = useRouter();
   const { chatId } = router.query;
   const { mutate: saveChatMessage } = api.chat.saveChatMessage.useMutation();
+  const { mutate: deleteChatMessage } = api.chat.deleteChatMessage.useMutation();
   
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
-      api: `src/app/api/openai`,
+      api: `/api/openai`,
       initialMessages,
       id,
       body: {
@@ -35,6 +36,8 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
       },
 
       onFinish(message) {
+        console.log("finished!!!!");
+
         saveChatMessage(
           {
             chatId: chatId as string,
@@ -43,16 +46,32 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
           },
           {
             onError(error) {
-              console.log(error);
+              console.log("error at onFinish and the message save", error);
             },
           }
         );
       },
 
       onError(error) {
-        console.log("error");
-        console.log(error);
-      }
+
+        console.log("error on the onError", error);
+
+        deleteChatMessage(
+          {
+            id: messages[messages.length - 1]?.id as string,
+          },
+          {
+            onError(error) {
+              console.log("error at the on Error and deleteChat", error);
+            },
+          }
+        )
+
+      },
+
+      
+
+      
     })
 
   const { data: chatsData } = api.chat.getChats.useQuery();
@@ -60,9 +79,9 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
   const selectedChat = chatsData?.find((chat) => chat.id === chatId) as Chat;
   
   return (
-    <div className="flex h-screen max-h-screen w-full flex-col justify-between bg-gray-100">
+    <div className="flex h-screen max-h-screen w-full flex-col justify-between bg-white">
       {/* Chat component label */}
-      <div className="flex flex-row border-b p-4 bg-white">
+      <div className="flex flex-row p-4 bg-white border border-gray-100">
         <span className="font-semibold text-gray-800">Selected chat:</span>
         <span className="ml-2 font-bold text-blue-600">
           {selectedChat && selectedChat.name}

@@ -31,10 +31,10 @@ function MyApp({
 }: ComponentWithPageLayout) {
   return (
     <div>
+      <Toaster />
       {Component.PageLayout ? (
         <Component.PageLayout>
             <SessionProvider session={session}>
-                <Toaster />
                 <Component {...pageProps} />
             </SessionProvider>
           </Component.PageLayout>

@@ -16,7 +16,7 @@ const ChatLayout = ({ children }: LayoutProps) => {
                 {/* Left Section: User Chats */}
                 <UserChats />
             </div>
-            <div className="flex-1 bg-white shadow">
+            <div className="flex-1 bg-white">
                 {/* Right Section: Current Chat */}
                 {children}
             </div>

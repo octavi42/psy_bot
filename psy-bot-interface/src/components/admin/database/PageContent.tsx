@@ -21,8 +21,6 @@ const PageContent: React.FC<PageContentProps> = ({
   sharedData
 }) => {
 
-  
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       // setFile(event.target.files[0]);

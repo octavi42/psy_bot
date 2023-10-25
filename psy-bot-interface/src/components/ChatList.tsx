@@ -1,7 +1,17 @@
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@radix-ui/react-dropdown-menu";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router"; // Import useRouter
 import React from "react";
 import { api } from "~/utils/api";
+import { Input } from "./ui/input";
+import { Select, SelectItem } from "@/components/ui/select";
+import { SelectContent, SelectTrigger, SelectValue } from "@radix-ui/react-select";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 const ChatList = () => {
   const { data: sessionData } = useSession();
@@ -14,14 +24,22 @@ const ChatList = () => {
 
   const deleteChatMutation = api.chat.deleteChat.useMutation();
 
+  const { toast } = useToast()
+
   const handleDeleteChat = (chatId: string) => {
     try {
       deleteChatMutation.mutate({ chatId }, {
         onSuccess: () => {
           refetchChats();
-        },
+        }
       });
     } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your request.",
+        action: <ToastAction altText="Try again" onClick={() => {handleDeleteChat}}>Try again</ToastAction>,
+      })
       console.error("Mutation Error:", error);
     }
   };
@@ -32,33 +50,32 @@ const ChatList = () => {
   };
 
   return (
-    <div className="bg-gray-100 p-4">
-      <h2 className="text-xl font-semibold mb-4">Chat List</h2>
-      {isChatLoading ? (
-        <p>Loading chats...</p>
-      ) : (
-        <div className="space-y-2">
-          {chatData?.map((chat) => (
+      
+    <div className="p-4">
+        {chatData?.map((chat) => (
+          <>
             <div
               key={chat.id}
-              className="border border-gray-300 rounded-md p-2 flex justify-between items-center hover:bg-gray-200 cursor-pointer"
+              className=" rounded-md h-16 flex justify-between items-center hover:bg-gray-200 transition ease-in-out delay-150 cursor-pointer"
               onClick={() => handleSelectChat(chat.id)} // Call handleSelectChat on click
             >
-              {chat.name}
-              <button
-                className="text-red-500"
+              <p className="m-4">{chat.name}</p>
+              <Button
+                variant="ghost"
+                className="hover:bg-red-400 m-4"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent event from bubbling to the parent div
                   handleDeleteChat(chat.id);
                 }}
               >
                 Delete
-              </button>
+              </Button>
             </div>
+            <Separator className="m-1 bg-transparent" />
+          </>
           ))}
-        </div>
-      )}
-    </div>
+      </div>
+
   );
 };
 

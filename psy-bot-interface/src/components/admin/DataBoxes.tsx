@@ -82,7 +82,7 @@ interface DataBoxProps {
         enabled={inputContent[2]}
         id="qa"
     >
-      <input id="category" type="text" placeholder="Category" onInput={handleInputChange} />
+      <input id="question_category" type="text" placeholder="Category" onInput={handleInputChange} />
       <input id="question" type="text" placeholder="Question" onInput={handleInputChange} />
       <input id="answer" type="text" placeholder="Answer" onInput={handleInputChange} />
     </DataBox>

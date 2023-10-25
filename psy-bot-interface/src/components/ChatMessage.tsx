@@ -8,7 +8,7 @@ interface ChatMessageProps {
 
 function ChatMessage({ message }: ChatMessageProps) {
     const { content, id, role } = message;
-    const messageClassName = role !== ChatRole.assistant ? "bg-accent" : "bg-white";
+    const messageClassName = role !== ChatRole.assistant ? "bg-accent left-0" : "bg-white right-0";
     
 
     const urlRegex = /https:\/\/www\.youtube\.com\/watch\?v=[^\s&]+(&t=\d+)?/g;
@@ -23,12 +23,12 @@ function ChatMessage({ message }: ChatMessageProps) {
     return (
         <div
             key={id}
-            className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border p-2 shadow-md`}
+            className={`${messageClassName} my-2 flex w-full flex-row items-center gap-3 rounded-md border border-gray-200 p-2`}
         >
             <div className="flex flex-col">
                 <h1
                     className={`font-semibold ${
-                        role === ChatRole.assistant ? "text-blue-600" : "text-green-600"
+                        role === ChatRole.assistant ? "text-blue-500" : "text-green-500"
                     }`}
                 >
                     {role === ChatRole.assistant ? "Assistant" : "You"}

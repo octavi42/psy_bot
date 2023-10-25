@@ -16,9 +16,6 @@ const [isClient, setIsClient] = useState(false);
 const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    // Update localStorage when messages change
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!");
-    
 
     if (isClient) {
       localStorage.setItem("messages", JSON.stringify(messages));

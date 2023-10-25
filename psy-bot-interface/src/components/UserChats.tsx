@@ -2,6 +2,11 @@ import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import { api } from "~/utils/api";
 import ChatList from "./ChatList";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label, Separator } from "@radix-ui/react-dropdown-menu";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 
 const UserChats = () => {
   const { data: sessionData } = useSession();
@@ -30,26 +35,64 @@ const UserChats = () => {
     }
   };
 
+  const tags = Array.from({ length: 50 }).map(
+    (_, i, a) => `v1.2.0-beta.${a.length - i}`
+  )
+
   return (
-    <div className="bg-white p-4 rounded-md">
-      <h2 className="text-xl font-semibold mb-4">User Chats</h2>
-      <div className="flex mb-4">
-        <input
+    <div className="justify-items-stretch flex flex-col content-evenly bg-white p-4 rounded-md h-screen ">
+      <div className="basis-0">
+        <h2 className="text-xl font-semibold mb-4">User Chats</h2>
+      </div>
+
+      <div className="basis-auto h-16 flex my-4">
+        <Input
           type="text"
           placeholder="Enter chat name"
           value={chatName}
           onChange={(e) => setChatName(e.target.value)}
-          className="w-full border p-1 rounded-md focus:outline-none"
+          className="w-full h-full border p-1 rounded-md focus:outline-none text-center"
         />
-        <button
+        <Button
           onClick={createChat}
-          className="ml-2 p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none"
+          className="ml-2 p-2 h-full"
         >
           Create
-        </button>
+        </Button>
       </div>
-      <ChatList />
+      {/* <ChatList /> */}
+
+        <ScrollArea className="relative w-full rounded-md border bottom-0 basis-full no-scrollbar">
+          <ChatList />
+        </ScrollArea>
     </div>
+
+
+    // <Card className="felx w-full h-screen overflow-hidden">
+    //   <CardHeader className="felx-auto">
+    //     <CardTitle>Chats</CardTitle>
+    //     <CardDescription>Create a new chat</CardDescription>
+    //   </CardHeader>
+    //   <CardContent className="felx-auto">
+    //     <form>
+    //       <div className="grid w-full items-center gap-4">
+    //         <div className="flex flex-col space-y-1.5">
+    //           <Label>Name</Label>
+    //           <div className="flex">
+    //             <Input id="name" placeholder="Name of your project" />
+    //             <Button className="mx-2">Create</Button>
+    //           </div>
+    //         </div>
+    //         <div className="flex flex-col space-y-1.5">
+              
+    //         </div>
+    //       </div>
+    //     </form>
+    //   </CardContent>
+    //   <CardFooter className="felx-1">
+    //     <ChatList />
+    //   </CardFooter>
+    // </Card>
   );
 };
 

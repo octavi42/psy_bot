@@ -1,142 +1,211 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Necessary for Next auth
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? @db.Text
-    access_token      String? @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 enum UserRole {
-    user
-    member
-    contributor
-    admin
+  user
+  member
+  contributor
+  admin
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    password      String
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt @default(now())
-    role          UserRole @default(user)
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  role          UserRole  @default(user)
 
-    chats         Chat[]
-    objects       Objects[]
-    accounts      Account[]
-    sessions      Session[]
-    saveState     SavingProcess?
+  chats     Chat[]
+  objects   Object[]
+  accounts  Account[]
+  sessions  Session[]
+  saveState SavingProcess?
 }
 
-
 enum SaveState {
-    saved
-    saving
-    unknown
+  saved
+  saving
+  unknown
 }
 
 model SavingProcess {
-    id              String    @id @default(cuid())
-    
-    state           SaveState @default(unknown)
-    message         String?   @db.Text
-    userId          String    @unique
+  id String @id @default(cuid())
 
-    user            User      @relation(fields: [userId], references: [id])
+  state   SaveState @default(unknown)
+  message String?   @db.Text
+  userId  String    @unique
+
+  user User @relation(fields: [userId], references: [id])
 }
 
-
 model Chat {
-    id              String   @id @default(cuid())
-    createdAt       DateTime @default(now())
-    createdByUserId String
-    name            String
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  createdByUserId String
+  name            String
 
-    createdByUser   User       @relation(fields: [createdByUserId], references: [id])
-    messages        Messages[]
+  createdByUser User       @relation(fields: [createdByUserId], references: [id])
+  messages      Messages[]
 }
 
 enum ChatRole {
-    user
-    assistant
+  user
+  assistant
 }
-
 
 model Messages {
-    id        String   @id @default(cuid())
-    chatId    String
-    text      String   @db.Text
-    role      ChatRole @default(user)
-    createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  chatId    String
+  text      String   @db.Text
+  role      ChatRole @default(user)
+  createdAt DateTime @default(now())
 
-    chat      Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
 
+model Object {
+  id String @id @default(cuid())
 
-model Objects {
-    id String @id   @default(cuid())
+  title       String
+  description String? @db.Text
+  type        String
 
-    createdByUserId String
-    title           String
-    description     String?     @db.Text
-    transcription   Transcriptions[]
-    youtube_id      String?
-    type            String
-    
-    createdByUser   User                @relation(fields: [createdByUserId], references: [id])
+  createdByUserId String
+  createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+
+  youtube_object_id  String? @unique
+  qa_object_id       String? @unique
+  file_object_id     String? @unique
+  audio_object_id    String? @unique
+  database_object_id String? @unique
+  about_object_id    String? @unique
+
+  youtube_object  Youtube_Object?  @relation(fields: [youtube_object_id], references: [id])
+  qa_object       QA_Objects?      @relation(fields: [qa_object_id], references: [id])
+  file_object     File_Object?     @relation(fields: [file_object_id], references: [id])
+  audio_object    Audio_Object?    @relation(fields: [audio_object_id], references: [id])
+  database_object Database_Object? @relation(fields: [database_object_id], references: [id])
+  about_object    About_Object?    @relation(fields: [about_object_id], references: [id])
+
+}
+
+model Youtube_Object {
+  id String @id @default(cuid())
+
+  transcription Transcriptions[]
+  youtube_id    String
+
+  object Object?
+}
+
+model QA_Objects {
+  id String @id @default(cuid())
+
+  category String
+  question String
+  answer   String
+
+  object Object?
+}
+
+model File_Object {
+  id String @id @default(cuid())
+
+  transcription Transcriptions[]
+
+  object Object?
+}
+
+model Audio_Object {
+  id String @id @default(cuid())
+
+  transcription Transcriptions[]
+
+  object Object?
+}
+
+model Database_Object {
+  id String @id @default(cuid())
+
+  transcription Transcriptions[]
+  category      String
+
+  object Object?
+}
+
+model About_Object {
+  id String @id @default(cuid())
+
+  transcription Transcriptions[]
+  category      String
+
+  object Object?
 }
 
 model Transcriptions {
-  id        String      @id @default(cuid())
-  objectId  String
-  text      String      @db.Text
+  id String @id @default(cuid())
 
-  object    Objects     @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  text String @db.Text
+
+  Youtube_Object    Youtube_Object?  @relation(fields: [youtube_ObjectId], references: [id])
+  youtube_ObjectId  String?
+  File_Object       File_Object?     @relation(fields: [file_ObjectId], references: [id])
+  file_ObjectId     String?
+  Audio_Object      Audio_Object?    @relation(fields: [audio_ObjectId], references: [id])
+  audio_ObjectId    String?
+  Database_Object   Database_Object? @relation(fields: [database_ObjectId], references: [id])
+  database_ObjectId String?
+  About_Object      About_Object?    @relation(fields: [about_ObjectId], references: [id])
+  about_ObjectId    String?
 }
 
-
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }

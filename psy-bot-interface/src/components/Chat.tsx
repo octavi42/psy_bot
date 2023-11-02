@@ -7,6 +7,7 @@ import { useChat, type Message } from "ai/react"
 import ChatMessage from "./ChatMessage";
 
 import { InputPanel } from "./InputPanel";
+import ChatLabel from "./ChatLabel";
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -68,25 +69,15 @@ function CurrentChat({ id, initialMessages, className }: ChatProps) {
         )
 
       },
-
-      
-
       
     })
 
-  const { data: chatsData } = api.chat.getChats.useQuery();
-
-  const selectedChat = chatsData?.find((chat) => chat.id === chatId) as Chat;
+  
   
   return (
     <div className="flex h-screen max-h-screen w-full flex-col justify-between bg-white">
       {/* Chat component label */}
-      <div className="flex flex-row p-4 bg-white border border-gray-100">
-        <span className="font-semibold text-gray-800">Selected chat:</span>
-        <span className="ml-2 font-bold text-blue-600">
-          {selectedChat && selectedChat.name}
-        </span>
-      </div>
+      <ChatLabel chatId={chatId as string} />
       
       {/* Container for messages */}
       <AutoScrollContainer>

@@ -57,7 +57,10 @@ export function DataTable<TData, TValue>({
             ))}
             </TableHeader>
             <TableBody>
-            {table.getRowModel().rows?.length ? (
+                <div>
+                <p>dasd</p>
+              </div>
+            {/* {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                 <TableRow
                     key={row.id}
@@ -76,7 +79,7 @@ export function DataTable<TData, TValue>({
                     No results.
                 </TableCell>
                 </TableRow>
-            )}
+            )} */}
             </TableBody>
         </Table>
         </div>
@@ -94,7 +97,7 @@ export function DataTable<TData, TValue>({
             variant="outline"
             size="sm"
             onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            // disabled={!table.getCanNextPage()}
             className="rounded-xl"
             >
             Next

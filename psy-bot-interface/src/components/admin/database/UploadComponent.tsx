@@ -39,6 +39,7 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
   const [isLoading, setIsLoading] = useState(false); // Track loading state
   const { data: sessionData } = useSession();
   const { mutate: saveObject } = api.object.createChatObject.useMutation();
+  const { mutate: createObject } = api.object.createObject.useMutation();
   const { mutate: updateTranscription } = api.object.changeTranscription.useMutation();
   // const { mutate: updateState } = api.saveState.changeState.useMutation();
 
@@ -86,6 +87,21 @@ const UploadComponent = ({ reqElems, endpoint, classId, setSharedData }: UploadC
       for (const { key, value } of Object.values(reqElems)) {
         requestData[key] = value;
       }
+
+      // const input = {
+      //   id: "123",
+      //   title: "Sample Object",
+      //   description: "A sample object description",
+      //   type: "Sample Type",
+      //   actualObject: {
+      //     attr1: "Value1",
+      //     attr2: "Value2",
+      //     attr3: "Value3",
+      //     // Additional attributes with unknown names and values
+      //   },
+      // };
+
+      // createObject(input)
   
       // Send the data to your server with the AbortController signal
       axios({

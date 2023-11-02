@@ -16,8 +16,7 @@ function ChatMessage({ message }: ChatMessageProps) {
     // Process the content to handle YouTube links
     const messageContentWithLinks = (typeof content === "string" ? content : "").replace(
         urlRegex,
-        (url) =>
-            `<a href="${url}" target="_blank" style="color: CornflowerBlue;">Youtube link</a>`
+        (url) => `<a href="${url}" target="_blank" style="color: CornflowerBlue;">Youtube link</a>`
     );
 
     return (

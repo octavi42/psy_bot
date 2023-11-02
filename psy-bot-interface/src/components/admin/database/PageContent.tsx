@@ -127,7 +127,8 @@ const PageContent: React.FC<PageContentProps> = ({
     <div className="w-4/5 mr-8 min-h-full">
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 items-center">
         {/* Conditionally render based on isSaving */}
-        {(processState?.state === SaveState.saving) ? (
+        {/* {(processState?.state === SaveState.saving) ? ( */}
+        {false ? (
           <div>
             <p>Saving...</p>
             {/* You can display a loading bar here */}

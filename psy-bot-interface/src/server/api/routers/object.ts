@@ -1,19 +1,24 @@
 import { error } from "console";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { Object_Type } from "@prisma/client";
 
 export const objectsRouter = createTRPCRouter({
   
   getAll: protectedProcedure
-    .input(
-      z
-        .object({
-          filter: z.string().optional(),
-          user: z.string().optional(),
-        })
-        .nullish(),
-    )
+    // .input(
+    //   z
+    //     .object({
+    //       filter: z.string().optional(),
+    //       user: z.string().optional(),
+    //     })
+    //     .nullish(),
+    // )
     .query(async ({ ctx, input }) => {
+
+      console.log("3323");
+      
+      
       // const { filter, user } = input || { filter: "", user: "" };
 
       // if (!filter) return error("No filter provided");
@@ -30,34 +35,71 @@ export const objectsRouter = createTRPCRouter({
       
       // return result
 
-      return ctx.prisma.objects.findMany();
+      return ctx.prisma.object.findMany();
 
     }),
 
-
-    createChatObject: protectedProcedure
+    createObject: protectedProcedure
       .input(
         z.object({
           id: z.string(),
           title: z.string(),
           description: z.string().optional(),
-          youtubeId: z.string().optional(),
-          fileType: z.string(),
+          obj_type: z.string(),
+          
+          object: z.record(z.unknown()),
         })
       )
-      .mutation(({ ctx, input }) => {
-        const { id, title, description, youtubeId, fileType } = input;
 
-        return ctx.prisma.objects.create({
+      .mutation(async ({ ctx, input }) => {
+
+        const { id, title, description, obj_type, object } = input;
+
+
+        // if (obj_type === "Youtube") {
+          const createdSpecificObject = await ctx.prisma.youtube_Object.create({
+            data: {
+              youtube_id: object.youtube_id as string
+            },
+          });
+
+          const createdSpecificRelationalObject = await ctx.prisma.specific_Object.create({
+            data: {
+              youtube_object_id: createdSpecificObject.id,
+              type: obj_type as Object_Type,
+            }
+          });
+
+          console.log(createdSpecificRelationalObject);
+        // }
+
+        if (createdSpecificRelationalObject === undefined) {
+          return
+        }
+
+        const createdObject = await ctx.prisma.object.create({
           data: {
-              id: id,
-              createdByUserId: ctx.session.user.id,
-              title: title,
-              description: description,
-              youtube_id: youtubeId,
-              type: fileType,
+            id: id,
+            title: title,
+            description: description,
+            saved_status: "Sending data for processing",
+            createdByUserId: ctx.session.user.id,
+            specific_object_id: createdSpecificRelationalObject.id as string,
+
+            // add a condition that determins on witch object to create
+
+            // Other attributes here
           },
         });
+    
+        console.log("Attributes and values of actualObject:");
+        // for (const key of Object.keys(object)) {
+        //   console.log(`${key}: ${object[key]}`);
+        // }
+    
+        // Your mutation logic here
+    
+        return createdObject;
       }),
 
 
@@ -184,3 +226,18 @@ async function findUserByName(name: string, ctx: any) {
 
   return userByNames;
 }
+
+
+// Example usage
+const input = {
+  id: "123",
+  title: "Sample Object",
+  description: "A sample object description",
+  type: "Sample Type",
+  actualObject: {
+    attr1: "Value1",
+    attr2: "Value2",
+    attr3: "Value3",
+    // Additional attributes with unknown names and values
+  },
+};

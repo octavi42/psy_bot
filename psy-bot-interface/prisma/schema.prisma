@@ -109,12 +109,22 @@ model Messages {
 model Object {
   id String @id @default(cuid())
 
-  title       String
-  description String? @db.Text
-  type        String
+  title         String
+  description   String? @db.Text
+  saved         Boolean @default(false)
+  saved_status  String  @db.Text
 
   createdByUserId String
   createdByUser   User   @relation(fields: [createdByUserId], references: [id])
+
+  specific_object_id   String   @unique
+  specific_object      Specific_Object   @relation(fields: [specific_object_id], references: [id])
+}
+
+model Specific_Object {
+  id      String    @id   @default(cuid())
+  object  Object?
+  type    Object_Type
 
   youtube_object_id  String? @unique
   qa_object_id       String? @unique
@@ -124,12 +134,20 @@ model Object {
   about_object_id    String? @unique
 
   youtube_object  Youtube_Object?  @relation(fields: [youtube_object_id], references: [id])
-  qa_object       QA_Objects?      @relation(fields: [qa_object_id], references: [id])
+  qa_object       QA_Object?       @relation(fields: [qa_object_id], references: [id])
   file_object     File_Object?     @relation(fields: [file_object_id], references: [id])
   audio_object    Audio_Object?    @relation(fields: [audio_object_id], references: [id])
   database_object Database_Object? @relation(fields: [database_object_id], references: [id])
   about_object    About_Object?    @relation(fields: [about_object_id], references: [id])
+}
 
+enum Object_Type {
+    Youtube
+    QA
+    File
+    Audio
+    Database
+    About
 }
 
 model Youtube_Object {
@@ -138,17 +156,17 @@ model Youtube_Object {
   transcription Transcriptions[]
   youtube_id    String
 
-  object Object?
+  specific_object Specific_Object?
 }
 
-model QA_Objects {
+model QA_Object {
   id String @id @default(cuid())
 
   category String
   question String
   answer   String
 
-  object Object?
+  specific_object Specific_Object?
 }
 
 model File_Object {
@@ -156,7 +174,7 @@ model File_Object {
 
   transcription Transcriptions[]
 
-  object Object?
+  specific_object Specific_Object?
 }
 
 model Audio_Object {
@@ -164,7 +182,7 @@ model Audio_Object {
 
   transcription Transcriptions[]
 
-  object Object?
+  specific_object Specific_Object?
 }
 
 model Database_Object {
@@ -173,7 +191,7 @@ model Database_Object {
   transcription Transcriptions[]
   category      String
 
-  object Object?
+  specific_object Specific_Object?
 }
 
 model About_Object {
@@ -182,7 +200,7 @@ model About_Object {
   transcription Transcriptions[]
   category      String
 
-  object Object?
+  specific_object Specific_Object?
 }
 
 model Transcriptions {

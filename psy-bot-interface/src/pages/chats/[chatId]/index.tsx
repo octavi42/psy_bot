@@ -9,7 +9,7 @@ const MainPage = () => {
   const { chatId } = router.query;
 
   // // Fetch messages data
-  const { data: messagesData } =
+  const { data: messagesData, error } =
     api.chat.getMessages.useQuery(
       {
         chatId: chatId as string,

@@ -40,67 +40,64 @@ export const objectsRouter = createTRPCRouter({
     }),
 
     createObject: protectedProcedure
-      .input(
-        z.object({
-          id: z.string(),
-          title: z.string(),
-          description: z.string().optional(),
-          obj_type: z.string(),
-          
-          object: z.record(z.unknown()),
-        })
-      )
+  .input(
+    z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      obj_type: z.string(),
+      object: z.record(z.unknown()),
+    })
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { title, description, obj_type, object } = input;
 
-      .mutation(async ({ ctx, input }) => {
+    try {
+      const { specific_obj, specific_obj_id } = await objectSelection(obj_type, ctx);
 
-        const { id, title, description, obj_type, object } = input;
+      const createdSpecificObject = specific_obj.create({
+        data: object,
+      });
 
+      const createdSpecificRelationalObject = await ctx.prisma.specific_Object.create({
+        data: {
+          [specific_obj_id]: createdSpecificObject.id,
+          type: obj_type as Object_Type,
+        },
+      });
 
-        // if (obj_type === "Youtube") {
-          const createdSpecificObject = await ctx.prisma.youtube_Object.create({
-            data: {
-              youtube_id: object.youtube_id as string
-            },
-          });
+      if (!createdSpecificRelationalObject) {
+        throw new Error("Failed to create specific relational object");
+      }
 
-          const createdSpecificRelationalObject = await ctx.prisma.specific_Object.create({
-            data: {
-              youtube_object_id: createdSpecificObject.id,
-              type: obj_type as Object_Type,
-            }
-          });
+      const createdObject = await ctx.prisma.object.create({
+        data: {
+          title: title,
+          description: description,
+          saved_status: "Sending data for processing",
+          createdByUserId: ctx.session.user.id,
+          specific_object_id: createdSpecificRelationalObject.id as string,
+          // add other attributes here
+        },
+      });
 
-          console.log(createdSpecificRelationalObject);
-        // }
+      if (!createdObject) {
+        throw new Error("Failed to create the main object");
+      }
 
-        if (createdSpecificRelationalObject === undefined) {
-          return
-        }
+      console.log("Attributes and values of actualObject:");
+      // Iterate and log attributes and values if needed
 
-        const createdObject = await ctx.prisma.object.create({
-          data: {
-            id: id,
-            title: title,
-            description: description,
-            saved_status: "Sending data for processing",
-            createdByUserId: ctx.session.user.id,
-            specific_object_id: createdSpecificRelationalObject.id as string,
+      console.log("Backend object id:", createdObject.id);
 
-            // add a condition that determins on witch object to create
+      return createdObject.id;
 
-            // Other attributes here
-          },
-        });
-    
-        console.log("Attributes and values of actualObject:");
-        // for (const key of Object.keys(object)) {
-        //   console.log(`${key}: ${object[key]}`);
-        // }
-    
-        // Your mutation logic here
-    
-        return createdObject;
-      }),
+    } catch (error) {
+      console.error("Error creating object:", error);
+      throw error; // Rethrow the error to handle it at a higher level if needed
+    }
+  })
+  ,
+
 
 
     createTranscriptionObject: protectedProcedure
@@ -225,6 +222,57 @@ async function findUserByName(name: string, ctx: any) {
   });
 
   return userByNames;
+}
+
+
+async function objectSelection(obj_type: string, ctx: any) {
+
+  let specific_obj: any;
+  let specific_obj_id: any;
+
+  switch (obj_type) {
+    case "Youtube":
+      specific_obj = ctx.prisma.youtube_Object
+      specific_obj_id = "youtube_object_id"
+      
+      break;
+      
+    case "QA":
+      specific_obj = ctx.prisma.qA_Object
+      specific_obj_id = "qa_object_id"
+      
+      break;
+      
+    case "File":
+      specific_obj = ctx.prisma.file_Object   
+      specific_obj_id = "file_object_id"
+
+      break;
+    
+    case "Audio":
+      specific_obj = ctx.prisma.audio_Object
+      specific_obj_id = "audio_object_id"
+
+      break;
+
+    case "Database":
+      specific_obj = ctx.prisma.database_Object
+      specific_obj_id = "database_object_id"
+
+      break;
+    
+    case "About":
+      specific_obj = ctx.prisma.about_Object
+      specific_obj_id = "about_object_id"
+
+      break;
+
+    default:
+      return Promise.reject("None or wrong object type provided");
+  }
+  
+  return {specific_obj, specific_obj_id}
+
 }
 
 
